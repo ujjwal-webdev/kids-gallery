@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { Prisma, PaymentStatus, OrderStatus } from '@prisma/client';
 import { prisma } from '../config/database';
 import { config } from '../config';
-import { ApiError, NotFoundError, ValidationError } from '../utils/apiError';
+import { ApiError, NotFoundError, UnauthorizedError, ValidationError } from '../utils/apiError';
 import { logger } from '../utils/logger';
 
 export const paymentService = {
@@ -83,16 +83,22 @@ export const paymentService = {
       throw new ApiError('Razorpay is not configured', 500);
     }
 
-    const bodyStr = Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody;
     const expectedSignature = crypto
       .createHmac('sha256', config.razorpay.keySecret)
-      .update(bodyStr)
+      .update(rawBody)
       .digest('hex');
 
-    if (expectedSignature !== signature) {
-      throw new ValidationError('Invalid webhook signature');
+    const expectedSignatureBuffer = Buffer.from(expectedSignature, 'hex');
+    const providedSignatureBuffer = Buffer.from(signature, 'hex');
+
+    if (
+      expectedSignatureBuffer.length !== providedSignatureBuffer.length ||
+      !crypto.timingSafeEqual(expectedSignatureBuffer, providedSignatureBuffer)
+    ) {
+      throw new UnauthorizedError('Invalid webhook signature');
     }
 
+    const bodyStr = Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody;
     const payload = JSON.parse(bodyStr) as Record<string, unknown>;
 
     // Razorpay webhook payload shape: { event, payload: { payment: { entity: { id, ... } } } }
