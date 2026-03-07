@@ -3,6 +3,8 @@ import { orderController } from '../../controllers/order.controller';
 import { prisma } from '../../config/database';
 import { sendSuccess } from '../../utils/apiResponse';
 import { NotFoundError } from '../../utils/apiError';
+import { validate } from '../../middleware/validate.middleware';
+import { updateOrderStatusSchema } from '../../validators/order.validator';
 
 export const adminOrderRoutes = Router();
 
@@ -25,5 +27,5 @@ adminOrderRoutes.get('/:id', async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 });
-adminOrderRoutes.put('/:id/status', orderController.updateOrderStatus);
+adminOrderRoutes.put('/:id/status', validate(updateOrderStatusSchema), orderController.updateOrderStatus);
 
