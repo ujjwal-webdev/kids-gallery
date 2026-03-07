@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import { router } from './routes';
 import { errorMiddleware } from './middleware/error.middleware';
+import { AuthRequest } from './types';
 
 export const app = express();
 
@@ -30,7 +31,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Body parsing
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '10mb', verify: (req, _res, buf) => { (req as AuthRequest).rawBody = buf; } }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Compression

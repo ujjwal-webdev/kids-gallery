@@ -28,12 +28,12 @@ export const orderService = {
     });
     if (!cart || cart.items.length === 0) throw new ValidationError('Cart is empty');
 
-    // Check delivery zone — PIN codes without a zone entry proceed with free delivery (for COD/flexible zones)
+    // Check delivery zone — PIN codes without a zone record are not serviceable
     const zone = await prisma.deliveryZone.findUnique({ where: { pinCode: address.pinCode } });
-    if (zone && !zone.isServiceable) {
-      throw new ValidationError(`Delivery not available to PIN code ${address.pinCode}`);
+    if (!zone || !zone.isServiceable) {
+      throw new ValidationError('Delivery is not available to this PIN code');
     }
-    const deliveryCharge = zone ? new Prisma.Decimal(zone.deliveryCharge) : new Prisma.Decimal(0);
+    const deliveryCharge = new Prisma.Decimal(zone.deliveryCharge);
 
     // Calculate subtotal & GST
     let subtotal = new Prisma.Decimal(0);
@@ -75,6 +75,17 @@ export const orderService = {
     const orderNumber = generateOrderNumber();
 
     const order = await prisma.$transaction(async (tx) => {
+      // Pre-fetch all needed variants in a single query to avoid N+1
+      const variantIds = cart.items
+        .map((item: { variantId: string | null }) => item.variantId)
+        .filter((id: string | null): id is string => id !== null);
+      const variants: Array<{ id: string; type: string; name: string }> = variantIds.length > 0
+        ? await tx.productVariant.findMany({ where: { id: { in: variantIds } } })
+        : [];
+      const variantMap = new Map<string, { type: string; name: string }>(
+        variants.map((v) => [v.id, v] as [string, { type: string; name: string }]),
+      );
+
       const newOrder = await tx.order.create({
         data: {
           orderNumber,
@@ -91,16 +102,23 @@ export const orderService = {
           couponDiscount: discount.gt(0) ? discount : undefined,
           deliveryNotes,
           items: {
-            create: cart.items.map((item) => ({
-              productId: item.productId,
-              productName: item.product.name,
-              variantName: item.variantId ?? undefined,
-              quantity: item.quantity,
-              unitPrice: item.product.sellingPrice,
-              totalPrice: new Prisma.Decimal(item.product.sellingPrice).mul(item.quantity),
-              gstRate: item.product.gstRate,
-              gstAmount: new Prisma.Decimal(item.product.sellingPrice).mul(item.quantity).mul(item.product.gstRate).div(100),
-            })),
+            create: cart.items.map((item) => {
+              let variantName: string | null = null;
+              if (item.variantId) {
+                const variant = variantMap.get(item.variantId);
+                variantName = variant ? `${variant.type}: ${variant.name}` : null;
+              }
+              return {
+                productId: item.productId,
+                productName: item.product.name,
+                variantName,
+                quantity: item.quantity,
+                unitPrice: item.product.sellingPrice,
+                totalPrice: new Prisma.Decimal(item.product.sellingPrice).mul(item.quantity),
+                gstRate: item.product.gstRate,
+                gstAmount: new Prisma.Decimal(item.product.sellingPrice).mul(item.quantity).mul(item.product.gstRate).div(100),
+              };
+            }),
           },
           statusHistory: {
             create: { status: 'PENDING' as OrderStatus, note: 'Order placed' },
@@ -109,13 +127,16 @@ export const orderService = {
         include: { items: true, address: true },
       });
 
-      // Decrement stock
+      // Decrement stock with race-condition protection
       for (const item of cart.items) {
         if (item.product.trackInventory) {
-          await tx.product.update({
-            where: { id: item.productId },
+          const updated = await tx.product.updateMany({
+            where: { id: item.productId, stock: { gte: item.quantity } },
             data: { stock: { decrement: item.quantity } },
           });
+          if (updated.count === 0) {
+            throw new ValidationError(`Insufficient stock for product: ${item.product.name}`);
+          }
         }
       }
 
