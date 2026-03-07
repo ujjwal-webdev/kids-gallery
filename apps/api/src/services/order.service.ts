@@ -106,9 +106,10 @@ export const orderService = {
               let variantName: string | undefined;
               if (item.variantId) {
                 const variant = variantMap.get(item.variantId);
-                if (variant) {
-                  variantName = `${variant.type}: ${variant.name}`;
+                if (!variant) {
+                  throw new ValidationError(`Invalid variantId '${item.variantId}' for product '${item.productId}'.`);
                 }
+                variantName = `${variant.type}: ${variant.name}`;
               }
               return {
                 productId: item.productId,
