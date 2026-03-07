@@ -2,7 +2,8 @@ import crypto from 'crypto';
 import { Prisma, PaymentStatus, OrderStatus } from '@prisma/client';
 import { prisma } from '../config/database';
 import { config } from '../config';
-import { NotFoundError, ValidationError } from '../utils/apiError';
+import { ApiError, NotFoundError, UnauthorizedError, ValidationError } from '../utils/apiError';
+import { logger } from '../utils/logger';
 
 export const paymentService = {
   async createRazorpayOrder(orderId: string) {
@@ -35,6 +36,24 @@ export const paymentService = {
     razorpayPaymentId: string,
     razorpaySignature: string,
   ) {
+    if (!config.razorpay.keySecret) {
+      if (config.nodeEnv === 'development') {
+        logger.warn('Razorpay keySecret not configured — using dev mock verification');
+        const payment = await prisma.payment.findFirst({ where: { razorpayOrderId } });
+        if (!payment) throw new NotFoundError('Payment not found');
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: { razorpayPaymentId, razorpaySignature, status: PaymentStatus.PAID },
+        });
+        await prisma.order.update({
+          where: { id: payment.orderId },
+          data: { paymentStatus: PaymentStatus.PAID, status: OrderStatus.CONFIRMED },
+        });
+        return { success: true, paymentId: razorpayPaymentId };
+      }
+      throw new ApiError('Razorpay is not configured', 500);
+    }
+
     const expectedSignature = crypto
       .createHmac('sha256', config.razorpay.keySecret)
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
@@ -59,16 +78,32 @@ export const paymentService = {
     return { success: true, paymentId: razorpayPaymentId };
   },
 
-  async handleWebhook(payload: Record<string, unknown>, signature: string) {
-    const body = JSON.stringify(payload);
+  async handleWebhook(rawBody: Buffer | string, signature: string) {
+    if (!config.razorpay.keySecret) {
+      throw new ApiError('Razorpay is not configured', 500);
+    }
+
+    if (!signature) {
+      throw new UnauthorizedError('Missing webhook signature');
+    }
+
     const expectedSignature = crypto
       .createHmac('sha256', config.razorpay.keySecret)
-      .update(body)
+      .update(rawBody)
       .digest('hex');
 
-    if (expectedSignature !== signature) {
-      throw new ValidationError('Invalid webhook signature');
+    const expectedSignatureBuffer = Buffer.from(expectedSignature, 'hex');
+    const providedSignatureBuffer = Buffer.from(signature, 'hex');
+
+    if (
+      expectedSignatureBuffer.length !== providedSignatureBuffer.length ||
+      !crypto.timingSafeEqual(expectedSignatureBuffer, providedSignatureBuffer)
+    ) {
+      throw new UnauthorizedError('Invalid webhook signature');
     }
+
+    const bodyStr = Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody;
+    const payload = JSON.parse(bodyStr) as Record<string, unknown>;
 
     // Razorpay webhook payload shape: { event, payload: { payment: { entity: { id, ... } } } }
     const event = typeof payload.event === 'string' ? payload.event : '';
@@ -76,17 +111,24 @@ export const paymentService = {
     const paymentData = webhookPayload?.payment as Record<string, unknown> | undefined;
     const paymentEntityData = paymentData?.entity as Record<string, unknown> | undefined;
     const razorpayPaymentId = typeof paymentEntityData?.id === 'string' ? paymentEntityData.id : undefined;
+    const razorpayOrderId = typeof paymentEntityData?.order_id === 'string' ? paymentEntityData.order_id : undefined;
 
-    if (event === 'payment.captured' && razorpayPaymentId) {
-      const payment = await prisma.payment.findFirst({ where: { razorpayPaymentId } });
+    if (event === 'payment.captured' && razorpayPaymentId && razorpayOrderId) {
+      const payment = await prisma.payment.findFirst({ where: { razorpayOrderId } });
       if (payment) {
-        await prisma.payment.update({ where: { id: payment.id }, data: { status: PaymentStatus.PAID } });
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: { status: PaymentStatus.PAID, razorpayPaymentId },
+        });
         await prisma.order.update({ where: { id: payment.orderId }, data: { paymentStatus: PaymentStatus.PAID, status: OrderStatus.CONFIRMED } });
       }
-    } else if (event === 'payment.failed' && razorpayPaymentId) {
-      const payment = await prisma.payment.findFirst({ where: { razorpayPaymentId } });
+    } else if (event === 'payment.failed' && razorpayPaymentId && razorpayOrderId) {
+      const payment = await prisma.payment.findFirst({ where: { razorpayOrderId } });
       if (payment) {
-        await prisma.payment.update({ where: { id: payment.id }, data: { status: PaymentStatus.FAILED } });
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: { status: PaymentStatus.FAILED, razorpayPaymentId },
+        });
         await prisma.order.update({ where: { id: payment.orderId }, data: { paymentStatus: PaymentStatus.FAILED } });
       }
     }
