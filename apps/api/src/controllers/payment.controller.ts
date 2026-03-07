@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/apiResponse';
 import { paymentService } from '../services/payment.service';
+import { AuthRequest } from '../types';
 
 export const paymentController = {
   async createRazorpayOrder(req: Request, res: Response, next: NextFunction) {
@@ -26,7 +27,7 @@ export const paymentController = {
   async handleWebhook(req: Request, res: Response, next: NextFunction) {
     try {
       const signature = req.headers['x-razorpay-signature'] as string;
-      const result = await paymentService.handleWebhook(req.body as Record<string, unknown>, signature);
+      const result = await paymentService.handleWebhook((req as AuthRequest).rawBody ?? JSON.stringify(req.body), signature);
       sendSuccess(res, result);
     } catch (error) {
       next(error);

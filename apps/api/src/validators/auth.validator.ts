@@ -16,4 +16,5 @@ export const verifyOtpSchema = z.object({
 export const updateProfileSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   email: z.string().email().optional(),
+  avatar: z.string().optional(),
 });

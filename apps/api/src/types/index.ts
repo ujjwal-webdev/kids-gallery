@@ -6,6 +6,7 @@ export interface AuthRequest extends Request {
     phone: string;
     role: string;
   };
+  rawBody?: Buffer;
 }
 
 export interface PaginationQuery {
