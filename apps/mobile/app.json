@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Kid's Gallery",
+    "slug": "kids-gallery",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "kidsgallery",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ec4899"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kidsgallery.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ec4899"
+      },
+      "package": "com.kidsgallery.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
