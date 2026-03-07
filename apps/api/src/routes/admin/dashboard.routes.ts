@@ -32,7 +32,8 @@ dashboardRoutes.get('/', async (req: Request, res: Response, next: NextFunction)
       }),
     ]);
 
-    // Compare each product's stock against its own lowStockThreshold
+    // Fetch products with stock at or below their individual lowStockThreshold
+    // Using $queryRaw is necessary here since Prisma cannot compare two columns in a where clause
     const lowStockProducts = await prisma.$queryRaw<
       Array<{ id: string; name: string; stock: number; lowStockThreshold: number }>
     >`

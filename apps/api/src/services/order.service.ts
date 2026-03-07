@@ -28,11 +28,12 @@ export const orderService = {
     });
     if (!cart || cart.items.length === 0) throw new ValidationError('Cart is empty');
 
-    // Check delivery zone
+    // Check delivery zone — PIN codes without a zone entry proceed with free delivery (for COD/flexible zones)
     const zone = await prisma.deliveryZone.findUnique({ where: { pinCode: address.pinCode } });
-    const deliveryCharge = zone?.isServiceable
-      ? new Prisma.Decimal(zone.deliveryCharge)
-      : new Prisma.Decimal(0);
+    if (zone && !zone.isServiceable) {
+      throw new ValidationError(`Delivery not available to PIN code ${address.pinCode}`);
+    }
+    const deliveryCharge = zone ? new Prisma.Decimal(zone.deliveryCharge) : new Prisma.Decimal(0);
 
     // Calculate subtotal & GST
     let subtotal = new Prisma.Decimal(0);

@@ -70,11 +70,12 @@ export const paymentService = {
       throw new ValidationError('Invalid webhook signature');
     }
 
-    const event = payload.event as string;
-    const paymentEntity = (payload.payload as Record<string, unknown>)?.payment as Record<string, unknown> | undefined;
-    const razorpayPaymentId = paymentEntity?.entity
-      ? (paymentEntity.entity as Record<string, unknown>).id as string
-      : undefined;
+    // Razorpay webhook payload shape: { event, payload: { payment: { entity: { id, ... } } } }
+    const event = typeof payload.event === 'string' ? payload.event : '';
+    const webhookPayload = payload.payload as Record<string, unknown> | undefined;
+    const paymentData = webhookPayload?.payment as Record<string, unknown> | undefined;
+    const paymentEntityData = paymentData?.entity as Record<string, unknown> | undefined;
+    const razorpayPaymentId = typeof paymentEntityData?.id === 'string' ? paymentEntityData.id : undefined;
 
     if (event === 'payment.captured' && razorpayPaymentId) {
       const payment = await prisma.payment.findFirst({ where: { razorpayPaymentId } });
