@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/apiResponse';
 import { authService } from '../services/auth.service';
+import { AuthRequest } from '../types';
 
 export const authController = {
   async sendOtp(req: Request, res: Response, next: NextFunction) {
     try {
       const { phone } = req.body;
-      // TODO: Implement OTP sending via SMS provider
       await authService.sendOtp(phone);
       sendSuccess(res, null, 'OTP sent successfully');
     } catch (error) {
@@ -17,7 +17,6 @@ export const authController = {
   async verifyOtp(req: Request, res: Response, next: NextFunction) {
     try {
       const { phone, otp } = req.body;
-      // TODO: Verify OTP and return JWT token
       const result = await authService.verifyOtp(phone, otp);
       sendSuccess(res, result, 'Login successful');
     } catch (error) {
@@ -27,8 +26,19 @@ export const authController = {
 
   async refreshToken(req: Request, res: Response, next: NextFunction) {
     try {
-      // TODO: Implement token refresh
-      sendSuccess(res, null, 'Token refreshed');
+      const userId = (req as AuthRequest).user!.id;
+      const result = await authService.refreshToken(userId);
+      sendSuccess(res, result, 'Token refreshed');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getProfile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as AuthRequest).user!.id;
+      const result = await authService.getProfile(userId);
+      sendSuccess(res, result);
     } catch (error) {
       next(error);
     }
@@ -36,7 +46,6 @@ export const authController = {
 
   async logout(req: Request, res: Response, next: NextFunction) {
     try {
-      // TODO: Invalidate token
       sendSuccess(res, null, 'Logged out successfully');
     } catch (error) {
       next(error);

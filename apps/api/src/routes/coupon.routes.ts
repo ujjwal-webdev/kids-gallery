@@ -1,16 +1,13 @@
 import { Router } from 'express';
 import { couponController } from '../controllers/coupon.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { adminMiddleware } from '../middleware/admin.middleware';
 
 export const couponRoutes = Router();
 
-// TODO: Implement coupon validation (check eligibility, expiry, usage limits)
-couponRoutes.post('/validate', authMiddleware, async (req, res, next) => {
-  try {
-    // TODO: Validate coupon code against user's cart and order amount
-    const { code } = req.body as { code: string };
-    res.json({ success: true, message: `Coupon ${code} validation - TODO` });
-  } catch (error) {
-    next(error);
-  }
-});
+couponRoutes.post('/validate', authMiddleware, couponController.validateCoupon);
+couponRoutes.get('/', authMiddleware, adminMiddleware, couponController.getAllCoupons);
+couponRoutes.post('/', authMiddleware, adminMiddleware, couponController.createCoupon);
+couponRoutes.put('/:id', authMiddleware, adminMiddleware, couponController.updateCoupon);
+couponRoutes.delete('/:id', authMiddleware, adminMiddleware, couponController.deleteCoupon);
+

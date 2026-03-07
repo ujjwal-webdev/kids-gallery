@@ -8,4 +8,5 @@ cartRoutes.get('/', authMiddleware, cartController.getCart);
 cartRoutes.post('/items', authMiddleware, cartController.addItem);
 cartRoutes.put('/items/:itemId', authMiddleware, cartController.updateItem);
 cartRoutes.delete('/items/:itemId', authMiddleware, cartController.removeItem);
-cartRoutes.delete('/', authMiddleware, cartController.clearCart);
+cartRoutes.delete('/clear', authMiddleware, cartController.clearCart);
+

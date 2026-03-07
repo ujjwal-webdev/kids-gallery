@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/apiResponse';
 import { cartService } from '../services/cart.service';
+import { AuthRequest } from '../types';
 
 export const cartController = {
   async getCart(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const userId = (req as AuthRequest).user!.id;
       const result = await cartService.getCart(userId);
       sendSuccess(res, result);
     } catch (error) {
@@ -15,13 +16,9 @@ export const cartController = {
 
   async addItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as Request & { user?: { id: string } }).user!.id;
-      const { productId, quantity, variantId } = req.body as {
-        productId: string;
-        quantity: number;
-        variantId?: string;
-      };
-      const result = await cartService.addItem(userId, productId, quantity, variantId);
+      const userId = (req as AuthRequest).user!.id;
+      const { productId, quantity, variantId } = req.body;
+      const result = await cartService.addItem(userId, productId, quantity ?? 1, variantId);
       sendSuccess(res, result, 'Item added to cart');
     } catch (error) {
       next(error);
@@ -30,10 +27,10 @@ export const cartController = {
 
   async updateItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as Request & { user?: { id: string } }).user!.id;
-      const { quantity } = req.body as { quantity: number };
+      const userId = (req as AuthRequest).user!.id;
+      const { quantity } = req.body;
       const result = await cartService.updateItemQuantity(userId, req.params.itemId, quantity);
-      sendSuccess(res, result, 'Cart item updated');
+      sendSuccess(res, result, 'Cart updated');
     } catch (error) {
       next(error);
     }
@@ -41,7 +38,7 @@ export const cartController = {
 
   async removeItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const userId = (req as AuthRequest).user!.id;
       const result = await cartService.removeItem(userId, req.params.itemId);
       sendSuccess(res, result, 'Item removed from cart');
     } catch (error) {
@@ -51,7 +48,7 @@ export const cartController = {
 
   async clearCart(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const userId = (req as AuthRequest).user!.id;
       await cartService.clearCart(userId);
       sendSuccess(res, null, 'Cart cleared');
     } catch (error) {

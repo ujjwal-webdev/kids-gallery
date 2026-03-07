@@ -4,14 +4,8 @@ import { authMiddleware } from '../middleware/auth.middleware';
 
 export const reviewRoutes = Router();
 
-// TODO: Implement review getAll
-reviewRoutes.get('/product/:productId', reviewController.getAll);
+reviewRoutes.get('/product/:productId', reviewController.getProductReviews);
+reviewRoutes.post('/product/:productId', authMiddleware, reviewController.createReview);
+reviewRoutes.put('/:id', authMiddleware, reviewController.updateReview);
+reviewRoutes.delete('/:id', authMiddleware, reviewController.deleteReview);
 
-// TODO: Implement review create
-reviewRoutes.post('/', authMiddleware, reviewController.create);
-
-// TODO: Implement review update
-reviewRoutes.put('/:id', authMiddleware, reviewController.update);
-
-// TODO: Implement review delete
-reviewRoutes.delete('/:id', authMiddleware, reviewController.delete);

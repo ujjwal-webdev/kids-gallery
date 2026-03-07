@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/apiResponse';
 import { paymentService } from '../services/payment.service';
-import { ValidationError } from '../utils/apiError';
 
 export const paymentController = {
   async createRazorpayOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await paymentService.createRazorpayOrder(req.params.orderId);
-      sendSuccess(res, result);
+      const { orderId } = req.body;
+      const result = await paymentService.createRazorpayOrder(orderId);
+      sendSuccess(res, result, 'Razorpay order created');
     } catch (error) {
       next(error);
     }
@@ -26,7 +26,7 @@ export const paymentController = {
   async handleWebhook(req: Request, res: Response, next: NextFunction) {
     try {
       const signature = req.headers['x-razorpay-signature'] as string;
-      const result = await paymentService.handleWebhook(req.body, signature);
+      const result = await paymentService.handleWebhook(req.body as Record<string, unknown>, signature);
       sendSuccess(res, result);
     } catch (error) {
       next(error);
@@ -35,21 +35,9 @@ export const paymentController = {
 
   async processRefund(req: Request, res: Response, next: NextFunction) {
     try {
-      const { amount } = req.body;
-      const result = await paymentService.processRefund(req.params.orderId, amount);
-      sendSuccess(res, result, 'Refund processed successfully');
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  // Generic alias used by /payment/create route — creates a Razorpay order for the given orderId in the request body
-  async create(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { orderId } = req.body;
-      if (!orderId) throw new ValidationError('orderId is required');
-      const result = await paymentService.createRazorpayOrder(orderId);
-      sendSuccess(res, result, 'Payment order created successfully', 201);
+      const { orderId, amount } = req.body;
+      const result = await paymentService.processRefund(orderId, amount);
+      sendSuccess(res, result, 'Refund initiated');
     } catch (error) {
       next(error);
     }

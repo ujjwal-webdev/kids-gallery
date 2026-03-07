@@ -2,12 +2,39 @@ import { Request, Response, NextFunction } from 'express';
 import { sendSuccess, sendPaginated } from '../utils/apiResponse';
 import { productService } from '../services/product.service';
 
-// TODO: Implement product controller methods
 export const productController = {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await productService.getAll(req.query as Record<string, string>);
       sendPaginated(res, result.data, result.total, result.page, result.limit);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getFeatured(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await productService.getFeatured();
+      sendSuccess(res, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async search(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { q, ...pagination } = req.query as Record<string, string>;
+      const result = await productService.search(q || '', pagination);
+      sendPaginated(res, result.data, result.total, result.page, result.limit);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getBySlug(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await productService.getBySlug(req.params.slug);
+      sendSuccess(res, result);
     } catch (error) {
       next(error);
     }

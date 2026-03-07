@@ -1,9 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/apiResponse';
 import { couponService } from '../services/coupon.service';
+import { AuthRequest } from '../types';
 
 export const couponController = {
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async validateCoupon(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as AuthRequest).user!.id;
+      const { code, cartTotal } = req.body;
+      const result = await couponService.validateCoupon(code, cartTotal, userId);
+      sendSuccess(res, result, 'Coupon is valid');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getAllCoupons(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await couponService.getAllCoupons();
       sendSuccess(res, result);
@@ -12,16 +24,7 @@ export const couponController = {
     }
   },
 
-  async getById(req: Request, res: Response, next: NextFunction) {
-    try {
-      const result = await couponService.getCouponById(req.params.id);
-      sendSuccess(res, result);
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  async create(req: Request, res: Response, next: NextFunction) {
+  async createCoupon(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await couponService.createCoupon(req.body);
       sendSuccess(res, result, 'Coupon created successfully', 201);
@@ -30,7 +33,7 @@ export const couponController = {
     }
   },
 
-  async update(req: Request, res: Response, next: NextFunction) {
+  async updateCoupon(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await couponService.updateCoupon(req.params.id, req.body);
       sendSuccess(res, result, 'Coupon updated successfully');
@@ -39,7 +42,7 @@ export const couponController = {
     }
   },
 
-  async delete(req: Request, res: Response, next: NextFunction) {
+  async deleteCoupon(req: Request, res: Response, next: NextFunction) {
     try {
       await couponService.deleteCoupon(req.params.id);
       sendSuccess(res, null, 'Coupon deleted successfully');

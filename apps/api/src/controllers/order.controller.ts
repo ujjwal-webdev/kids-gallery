@@ -1,17 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendSuccess, sendPaginated } from '../utils/apiResponse';
 import { orderService } from '../services/order.service';
+import { AuthRequest } from '../types';
 
 export const orderController = {
   async createOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as Request & { user?: { id: string } }).user!.id;
-      const result = await orderService.createOrder(userId, req.body as {
-        addressId: string;
-        paymentMethod: string;
-        couponCode?: string;
-        deliveryNotes?: string;
-      });
+      const userId = (req as AuthRequest).user!.id;
+      const result = await orderService.createOrder(userId, req.body);
       sendSuccess(res, result, 'Order placed successfully', 201);
     } catch (error) {
       next(error);
@@ -20,7 +16,7 @@ export const orderController = {
 
   async getOrders(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const userId = (req as AuthRequest).user!.id;
       const result = await orderService.getOrders(userId, req.query as Record<string, string>);
       sendPaginated(res, result.data, result.total, result.page, result.limit);
     } catch (error) {
@@ -30,7 +26,7 @@ export const orderController = {
 
   async getOrderById(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const userId = (req as AuthRequest).user!.id;
       const result = await orderService.getOrderById(userId, req.params.id);
       sendSuccess(res, result);
     } catch (error) {
@@ -40,7 +36,7 @@ export const orderController = {
 
   async cancelOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const userId = (req as AuthRequest).user!.id;
       const result = await orderService.cancelOrder(userId, req.params.id);
       sendSuccess(res, result, 'Order cancelled successfully');
     } catch (error) {
@@ -50,7 +46,7 @@ export const orderController = {
 
   async updateOrderStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const { status, note } = req.body as { status: string; note?: string };
+      const { status, note } = req.body;
       const result = await orderService.updateOrderStatus(req.params.id, status, note);
       sendSuccess(res, result, 'Order status updated');
     } catch (error) {
