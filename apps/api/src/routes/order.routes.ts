@@ -4,14 +4,7 @@ import { authMiddleware } from '../middleware/auth.middleware';
 
 export const orderRoutes = Router();
 
-// TODO: Implement order getAll
-orderRoutes.get('/', authMiddleware, orderController.getAll);
-
-// TODO: Implement order getById
-orderRoutes.get('/:id', authMiddleware, orderController.getById);
-
-// TODO: Implement order create
-orderRoutes.post('/', authMiddleware, orderController.create);
-
-// TODO: Implement order update
-orderRoutes.put('/:id/cancel', authMiddleware, orderController.update);
+orderRoutes.get('/', authMiddleware, orderController.getOrders);
+orderRoutes.get('/:id', authMiddleware, orderController.getOrderById);
+orderRoutes.post('/', authMiddleware, orderController.createOrder);
+orderRoutes.put('/:id/cancel', authMiddleware, orderController.cancelOrder);

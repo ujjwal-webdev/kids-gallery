@@ -1,41 +1,62 @@
 import { prisma } from '../config/database';
-import { NotFoundError } from '../utils/apiError';
-import { parsePagination } from '../utils/helpers';
+import { NotFoundError, ForbiddenError } from '../utils/apiError';
 
-// TODO: Implement user service methods
 export const userService = {
-  async getAll(query: Record<string, string>) {
-    const { page, limit, skip } = parsePagination(query);
-    // TODO: Add filters based on query params
-    const [data, total] = await Promise.all([
-      (prisma as any).user.findMany({ skip, take: limit }),
-      (prisma as any).user.count(),
-    ]);
-    return { data, total, page, limit };
-  },
-
-  async getById(id: string) {
-    const item = await (prisma as any).user.findUnique({
-      where: { id },
+  async getProfile(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { addresses: { orderBy: { isDefault: 'desc' } } },
     });
-    if (!item) throw new NotFoundError('User not found');
-    return item;
+    if (!user) throw new NotFoundError('User not found');
+    return user;
   },
 
-  async create(data: Record<string, unknown>) {
-    // TODO: Add business logic
-    return (prisma as any).user.create({ data });
+  async updateProfile(userId: string, data: { name?: string; email?: string; avatar?: string }) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundError('User not found');
+    return prisma.user.update({ where: { id: userId }, data });
   },
 
-  async update(id: string, data: Record<string, unknown>) {
-    // TODO: Add business logic
-    return (prisma as any).user.update({
-      where: { id },
-      data,
+  async getAddresses(userId: string) {
+    return prisma.address.findMany({
+      where: { userId },
+      orderBy: { isDefault: 'desc' },
     });
   },
 
-  async delete(id: string) {
-    return (prisma as any).user.delete({ where: { id } });
+  async addAddress(userId: string, data: Record<string, unknown>) {
+    const isDefault = data.isDefault as boolean | undefined;
+    if (isDefault) {
+      await prisma.address.updateMany({ where: { userId }, data: { isDefault: false } });
+    }
+    return prisma.address.create({ data: { ...data, userId } as Parameters<typeof prisma.address.create>[0]['data'] });
+  },
+
+  async updateAddress(userId: string, addressId: string, data: Record<string, unknown>) {
+    const address = await prisma.address.findUnique({ where: { id: addressId } });
+    if (!address) throw new NotFoundError('Address not found');
+    if (address.userId !== userId) throw new ForbiddenError('Not your address');
+    if (data.isDefault) {
+      await prisma.address.updateMany({ where: { userId }, data: { isDefault: false } });
+    }
+    return prisma.address.update({
+      where: { id: addressId },
+      data: data as Parameters<typeof prisma.address.update>[0]['data'],
+    });
+  },
+
+  async deleteAddress(userId: string, addressId: string) {
+    const address = await prisma.address.findUnique({ where: { id: addressId } });
+    if (!address) throw new NotFoundError('Address not found');
+    if (address.userId !== userId) throw new ForbiddenError('Not your address');
+    return prisma.address.delete({ where: { id: addressId } });
+  },
+
+  async setDefaultAddress(userId: string, addressId: string) {
+    const address = await prisma.address.findUnique({ where: { id: addressId } });
+    if (!address) throw new NotFoundError('Address not found');
+    if (address.userId !== userId) throw new ForbiddenError('Not your address');
+    await prisma.address.updateMany({ where: { userId }, data: { isDefault: false } });
+    return prisma.address.update({ where: { id: addressId }, data: { isDefault: true } });
   },
 };

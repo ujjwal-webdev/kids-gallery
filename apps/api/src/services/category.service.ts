@@ -1,41 +1,81 @@
 import { prisma } from '../config/database';
 import { NotFoundError } from '../utils/apiError';
-import { parsePagination } from '../utils/helpers';
+import { generateSlug } from '../utils/helpers';
 
-// TODO: Implement category service methods
 export const categoryService = {
-  async getAll(query: Record<string, string>) {
-    const { page, limit, skip } = parsePagination(query);
-    // TODO: Add filters based on query params
-    const [data, total] = await Promise.all([
-      (prisma as any).category.findMany({ skip, take: limit }),
-      (prisma as any).category.count(),
-    ]);
-    return { data, total, page, limit };
+  async getAll() {
+    return prisma.category.findMany({
+      where: { isActive: true, parentId: null },
+      include: {
+        children: { where: { isActive: true }, orderBy: { sortOrder: 'asc' } },
+        _count: { select: { products: { where: { isActive: true } } } },
+      },
+      orderBy: { sortOrder: 'asc' },
+    });
+  },
+
+  async getBySlug(slug: string) {
+    const category = await prisma.category.findUnique({
+      where: { slug },
+      include: {
+        children: { where: { isActive: true }, orderBy: { sortOrder: 'asc' } },
+        products: {
+          where: { isActive: true },
+          include: { images: { where: { isPrimary: true }, take: 1 } },
+          take: 20,
+        },
+      },
+    });
+    if (!category) throw new NotFoundError('Category not found');
+    return category;
+  },
+
+  async getTree() {
+    const all = await prisma.category.findMany({
+      where: { isActive: true },
+      include: { _count: { select: { products: true } } },
+      orderBy: { sortOrder: 'asc' },
+    });
+    // Build tree
+    type CategoryWithChildren = typeof all[0] & { children: typeof all };
+    const map = new Map<string, CategoryWithChildren>();
+    all.forEach((c) => map.set(c.id, { ...c, children: [] }));
+    const roots: CategoryWithChildren[] = [];
+    map.forEach((c) => {
+      if (c.parentId && map.has(c.parentId)) {
+        map.get(c.parentId)!.children.push(c);
+      } else if (!c.parentId) {
+        roots.push(c);
+      }
+    });
+    return roots;
   },
 
   async getById(id: string) {
-    const item = await (prisma as any).category.findUnique({
-      where: { id },
-    });
-    if (!item) throw new NotFoundError('Category not found');
-    return item;
+    const category = await prisma.category.findUnique({ where: { id } });
+    if (!category) throw new NotFoundError('Category not found');
+    return category;
   },
 
   async create(data: Record<string, unknown>) {
-    // TODO: Add business logic
-    return (prisma as any).category.create({ data });
+    const { name, ...rest } = data as { name: string; [key: string]: unknown };
+    const slug = generateSlug(name);
+    return prisma.category.create({ data: { name, slug, ...rest } as Parameters<typeof prisma.category.create>[0]['data'] });
   },
 
   async update(id: string, data: Record<string, unknown>) {
-    // TODO: Add business logic
-    return (prisma as any).category.update({
-      where: { id },
-      data,
-    });
+    const category = await prisma.category.findUnique({ where: { id } });
+    if (!category) throw new NotFoundError('Category not found');
+    const updateData = { ...data } as Parameters<typeof prisma.category.update>[0]['data'];
+    if (data.name && typeof data.name === 'string' && data.name !== category.name) {
+      (updateData as Record<string, unknown>).slug = generateSlug(data.name);
+    }
+    return prisma.category.update({ where: { id }, data: updateData });
   },
 
   async delete(id: string) {
-    return (prisma as any).category.delete({ where: { id } });
+    const category = await prisma.category.findUnique({ where: { id } });
+    if (!category) throw new NotFoundError('Category not found');
+    return prisma.category.update({ where: { id }, data: { isActive: false } });
   },
 };

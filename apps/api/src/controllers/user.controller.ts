@@ -1,49 +1,73 @@
 import { Request, Response, NextFunction } from 'express';
-import { sendSuccess, sendPaginated } from '../utils/apiResponse';
+import { sendSuccess } from '../utils/apiResponse';
 import { userService } from '../services/user.service';
 
-// TODO: Implement user controller methods
 export const userController = {
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async getProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await userService.getAll(req.query as Record<string, string>);
-      sendPaginated(res, result.data, result.total, result.page, result.limit);
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  async getById(req: Request, res: Response, next: NextFunction) {
-    try {
-      const result = await userService.getById(req.params.id);
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const result = await userService.getProfile(userId);
       sendSuccess(res, result);
     } catch (error) {
       next(error);
     }
   },
 
-  async create(req: Request, res: Response, next: NextFunction) {
+  async updateProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await userService.create(req.body);
-      sendSuccess(res, result, 'User created successfully', 201);
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const result = await userService.updateProfile(userId, req.body as { name?: string; email?: string; avatar?: string });
+      sendSuccess(res, result, 'Profile updated successfully');
     } catch (error) {
       next(error);
     }
   },
 
-  async update(req: Request, res: Response, next: NextFunction) {
+  async getAddresses(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await userService.update(req.params.id, req.body);
-      sendSuccess(res, result, 'User updated successfully');
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const result = await userService.getAddresses(userId);
+      sendSuccess(res, result);
     } catch (error) {
       next(error);
     }
   },
 
-  async delete(req: Request, res: Response, next: NextFunction) {
+  async addAddress(req: Request, res: Response, next: NextFunction) {
     try {
-      await userService.delete(req.params.id);
-      sendSuccess(res, null, 'User deleted successfully');
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const result = await userService.addAddress(userId, req.body as Record<string, unknown>);
+      sendSuccess(res, result, 'Address added successfully', 201);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async updateAddress(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const result = await userService.updateAddress(userId, req.params.id, req.body as Record<string, unknown>);
+      sendSuccess(res, result, 'Address updated successfully');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async deleteAddress(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      await userService.deleteAddress(userId, req.params.id);
+      sendSuccess(res, null, 'Address deleted successfully');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async setDefaultAddress(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const result = await userService.setDefaultAddress(userId, req.params.id);
+      sendSuccess(res, result, 'Default address updated');
     } catch (error) {
       next(error);
     }

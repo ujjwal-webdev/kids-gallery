@@ -2,48 +2,66 @@ import { Request, Response, NextFunction } from 'express';
 import { sendSuccess, sendPaginated } from '../utils/apiResponse';
 import { orderService } from '../services/order.service';
 
-// TODO: Implement order controller methods
 export const orderController = {
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async createOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await orderService.getAll(req.query as Record<string, string>);
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const result = await orderService.createOrder(userId, req.body as {
+        addressId: string;
+        paymentMethod: string;
+        couponCode?: string;
+        deliveryNotes?: string;
+      });
+      sendSuccess(res, result, 'Order placed successfully', 201);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getOrders(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const result = await orderService.getOrders(userId, req.query as Record<string, string>);
       sendPaginated(res, result.data, result.total, result.page, result.limit);
     } catch (error) {
       next(error);
     }
   },
 
-  async getById(req: Request, res: Response, next: NextFunction) {
+  async getOrderById(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await orderService.getById(req.params.id);
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const result = await orderService.getOrderById(userId, req.params.id);
       sendSuccess(res, result);
     } catch (error) {
       next(error);
     }
   },
 
-  async create(req: Request, res: Response, next: NextFunction) {
+  async cancelOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await orderService.create(req.body);
-      sendSuccess(res, result, 'Order created successfully', 201);
+      const userId = (req as Request & { user?: { id: string } }).user!.id;
+      const result = await orderService.cancelOrder(userId, req.params.id);
+      sendSuccess(res, result, 'Order cancelled successfully');
     } catch (error) {
       next(error);
     }
   },
 
-  async update(req: Request, res: Response, next: NextFunction) {
+  async updateOrderStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await orderService.update(req.params.id, req.body);
-      sendSuccess(res, result, 'Order updated successfully');
+      const { status, note } = req.body as { status: string; note?: string };
+      const result = await orderService.updateOrderStatus(req.params.id, status, note);
+      sendSuccess(res, result, 'Order status updated');
     } catch (error) {
       next(error);
     }
   },
 
-  async delete(req: Request, res: Response, next: NextFunction) {
+  async getAllOrders(req: Request, res: Response, next: NextFunction) {
     try {
-      await orderService.delete(req.params.id);
-      sendSuccess(res, null, 'Order deleted successfully');
+      const result = await orderService.getAllOrders(req.query as Record<string, string>);
+      sendPaginated(res, result.data, result.total, result.page, result.limit);
     } catch (error) {
       next(error);
     }

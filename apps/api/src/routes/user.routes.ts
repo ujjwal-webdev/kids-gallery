@@ -4,20 +4,10 @@ import { authMiddleware } from '../middleware/auth.middleware';
 
 export const userRoutes = Router();
 
-// TODO: Implement user getById
-userRoutes.get('/me', authMiddleware, userController.getById);
-
-// TODO: Implement user update
-userRoutes.put('/me', authMiddleware, userController.update);
-
-// TODO: Implement user getAll
-userRoutes.get('/me/addresses', authMiddleware, userController.getAll);
-
-// TODO: Implement user create
-userRoutes.post('/me/addresses', authMiddleware, userController.create);
-
-// TODO: Implement user update
-userRoutes.put('/me/addresses/:id', authMiddleware, userController.update);
-
-// TODO: Implement user delete
-userRoutes.delete('/me/addresses/:id', authMiddleware, userController.delete);
+userRoutes.get('/me', authMiddleware, userController.getProfile);
+userRoutes.put('/me', authMiddleware, userController.updateProfile);
+userRoutes.get('/me/addresses', authMiddleware, userController.getAddresses);
+userRoutes.post('/me/addresses', authMiddleware, userController.addAddress);
+userRoutes.put('/me/addresses/:id', authMiddleware, userController.updateAddress);
+userRoutes.delete('/me/addresses/:id', authMiddleware, userController.deleteAddress);
+userRoutes.patch('/me/addresses/:id/default', authMiddleware, userController.setDefaultAddress);
