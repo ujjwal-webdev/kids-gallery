@@ -1,13 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
-import { sendSuccess, sendPaginated } from '../utils/apiResponse';
+import { sendSuccess } from '../utils/apiResponse';
 import { categoryService } from '../services/category.service';
 
-// TODO: Implement category controller methods
 export const categoryController = {
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async getAll(_req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await categoryService.getAll(req.query as Record<string, string>);
-      sendPaginated(res, result.data, result.total, result.page, result.limit);
+      const result = await categoryService.getAll();
+      sendSuccess(res, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getTree(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await categoryService.getTree();
+      sendSuccess(res, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getBySlug(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await categoryService.getBySlug(req.params.slug);
+      sendSuccess(res, result);
     } catch (error) {
       next(error);
     }
@@ -24,7 +41,7 @@ export const categoryController = {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await categoryService.create(req.body);
+      const result = await categoryService.create(req.body as Record<string, unknown>);
       sendSuccess(res, result, 'Category created successfully', 201);
     } catch (error) {
       next(error);
@@ -33,7 +50,7 @@ export const categoryController = {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await categoryService.update(req.params.id, req.body);
+      const result = await categoryService.update(req.params.id, req.body as Record<string, unknown>);
       sendSuccess(res, result, 'Category updated successfully');
     } catch (error) {
       next(error);

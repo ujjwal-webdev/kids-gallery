@@ -1,49 +1,56 @@
 import { Request, Response, NextFunction } from 'express';
-import { sendSuccess, sendPaginated } from '../utils/apiResponse';
+import { sendSuccess } from '../utils/apiResponse';
 import { cartService } from '../services/cart.service';
+import { AuthRequest } from '../types';
 
-// TODO: Implement cart controller methods
 export const cartController = {
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async getCart(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await cartService.getAll(req.query as Record<string, string>);
-      sendPaginated(res, result.data, result.total, result.page, result.limit);
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  async getById(req: Request, res: Response, next: NextFunction) {
-    try {
-      const result = await cartService.getById(req.params.id);
+      const userId = (req as AuthRequest).user!.id;
+      const result = await cartService.getCart(userId);
       sendSuccess(res, result);
     } catch (error) {
       next(error);
     }
   },
 
-  async create(req: Request, res: Response, next: NextFunction) {
+  async addItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await cartService.create(req.body);
-      sendSuccess(res, result, 'Cart created successfully', 201);
+      const userId = (req as AuthRequest).user!.id;
+      const { productId, quantity, variantId } = req.body;
+      const result = await cartService.addItem(userId, productId, quantity ?? 1, variantId);
+      sendSuccess(res, result, 'Item added to cart');
     } catch (error) {
       next(error);
     }
   },
 
-  async update(req: Request, res: Response, next: NextFunction) {
+  async updateItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await cartService.update(req.params.id, req.body);
-      sendSuccess(res, result, 'Cart updated successfully');
+      const userId = (req as AuthRequest).user!.id;
+      const { quantity } = req.body;
+      const result = await cartService.updateItemQuantity(userId, req.params.itemId, quantity);
+      sendSuccess(res, result, 'Cart updated');
     } catch (error) {
       next(error);
     }
   },
 
-  async delete(req: Request, res: Response, next: NextFunction) {
+  async removeItem(req: Request, res: Response, next: NextFunction) {
     try {
-      await cartService.delete(req.params.id);
-      sendSuccess(res, null, 'Cart deleted successfully');
+      const userId = (req as AuthRequest).user!.id;
+      const result = await cartService.removeItem(userId, req.params.itemId);
+      sendSuccess(res, result, 'Item removed from cart');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async clearCart(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as AuthRequest).user!.id;
+      await cartService.clearCart(userId);
+      sendSuccess(res, null, 'Cart cleared');
     } catch (error) {
       next(error);
     }

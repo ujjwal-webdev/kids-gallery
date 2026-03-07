@@ -1,17 +1,13 @@
 import { Router } from 'express';
 import { orderController } from '../controllers/order.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { validate } from '../middleware/validate.middleware';
+import { createOrderSchema } from '../validators/order.validator';
 
 export const orderRoutes = Router();
 
-// TODO: Implement order getAll
-orderRoutes.get('/', authMiddleware, orderController.getAll);
+orderRoutes.post('/', authMiddleware, validate(createOrderSchema), orderController.createOrder);
+orderRoutes.get('/', authMiddleware, orderController.getOrders);
+orderRoutes.get('/:id', authMiddleware, orderController.getOrderById);
+orderRoutes.put('/:id/cancel', authMiddleware, orderController.cancelOrder);
 
-// TODO: Implement order getById
-orderRoutes.get('/:id', authMiddleware, orderController.getById);
-
-// TODO: Implement order create
-orderRoutes.post('/', authMiddleware, orderController.create);
-
-// TODO: Implement order update
-orderRoutes.put('/:id/cancel', authMiddleware, orderController.update);

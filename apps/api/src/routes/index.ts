@@ -9,6 +9,7 @@ import { couponRoutes } from './coupon.routes';
 import { reviewRoutes } from './review.routes';
 import { bannerRoutes } from './banner.routes';
 import { paymentRoutes } from './payment.routes';
+import { deliveryRoutes } from './delivery.routes';
 import { adminRouter } from './admin';
 
 export const router = Router();
@@ -23,4 +24,6 @@ router.use('/coupons', couponRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/banners', bannerRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/delivery', deliveryRoutes);
 router.use('/admin', adminRouter);
+

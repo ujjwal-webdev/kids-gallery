@@ -4,14 +4,9 @@ import { authMiddleware } from '../middleware/auth.middleware';
 
 export const cartRoutes = Router();
 
-// TODO: Implement cart getAll
-cartRoutes.get('/', authMiddleware, cartController.getAll);
+cartRoutes.get('/', authMiddleware, cartController.getCart);
+cartRoutes.post('/items', authMiddleware, cartController.addItem);
+cartRoutes.put('/items/:itemId', authMiddleware, cartController.updateItem);
+cartRoutes.delete('/items/:itemId', authMiddleware, cartController.removeItem);
+cartRoutes.delete('/clear', authMiddleware, cartController.clearCart);
 
-// TODO: Implement cart create
-cartRoutes.post('/items', authMiddleware, cartController.create);
-
-// TODO: Implement cart update
-cartRoutes.put('/items/:id', authMiddleware, cartController.update);
-
-// TODO: Implement cart delete
-cartRoutes.delete('/items/:id', authMiddleware, cartController.delete);

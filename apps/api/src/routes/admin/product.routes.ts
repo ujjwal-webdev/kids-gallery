@@ -1,29 +1,11 @@
 import { Router } from 'express';
-import { sendSuccess } from '../../utils/apiResponse';
+import { productController } from '../../controllers/product.controller';
 
 export const adminProductRoutes = Router();
 
-// TODO: Implement admin List
-adminProductRoutes.get('/', (req, res) => {
-  sendSuccess(res, null, 'Admin List - TODO');
-});
+adminProductRoutes.get('/', productController.getAll);
+adminProductRoutes.get('/:id', productController.getById);
+adminProductRoutes.post('/', productController.create);
+adminProductRoutes.put('/:id', productController.update);
+adminProductRoutes.delete('/:id', productController.delete);
 
-// TODO: Implement admin Get
-adminProductRoutes.get('/:id', (req, res) => {
-  sendSuccess(res, null, 'Admin Get - TODO');
-});
-
-// TODO: Implement admin Create
-adminProductRoutes.post('/', (req, res) => {
-  sendSuccess(res, null, 'Admin Create - TODO');
-});
-
-// TODO: Implement admin Update
-adminProductRoutes.put('/:id', (req, res) => {
-  sendSuccess(res, null, 'Admin Update - TODO');
-});
-
-// TODO: Implement admin Delete
-adminProductRoutes.delete('/:id', (req, res) => {
-  sendSuccess(res, null, 'Admin Delete - TODO');
-});

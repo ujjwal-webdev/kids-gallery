@@ -1,49 +1,43 @@
 import { Request, Response, NextFunction } from 'express';
-import { sendSuccess, sendPaginated } from '../utils/apiResponse';
+import { sendSuccess } from '../utils/apiResponse';
 import { paymentService } from '../services/payment.service';
 
-// TODO: Implement payment controller methods
 export const paymentController = {
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async createRazorpayOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await paymentService.getAll(req.query as Record<string, string>);
-      sendPaginated(res, result.data, result.total, result.page, result.limit);
+      const { orderId } = req.body;
+      const result = await paymentService.createRazorpayOrder(orderId);
+      sendSuccess(res, result, 'Razorpay order created');
     } catch (error) {
       next(error);
     }
   },
 
-  async getById(req: Request, res: Response, next: NextFunction) {
+  async verifyPayment(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await paymentService.getById(req.params.id);
+      const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
+      const result = await paymentService.verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+      sendSuccess(res, result, 'Payment verified successfully');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async handleWebhook(req: Request, res: Response, next: NextFunction) {
+    try {
+      const signature = req.headers['x-razorpay-signature'] as string;
+      const result = await paymentService.handleWebhook(req.body as Record<string, unknown>, signature);
       sendSuccess(res, result);
     } catch (error) {
       next(error);
     }
   },
 
-  async create(req: Request, res: Response, next: NextFunction) {
+  async processRefund(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await paymentService.create(req.body);
-      sendSuccess(res, result, 'Payment created successfully', 201);
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  async update(req: Request, res: Response, next: NextFunction) {
-    try {
-      const result = await paymentService.update(req.params.id, req.body);
-      sendSuccess(res, result, 'Payment updated successfully');
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  async delete(req: Request, res: Response, next: NextFunction) {
-    try {
-      await paymentService.delete(req.params.id);
-      sendSuccess(res, null, 'Payment deleted successfully');
+      const { orderId, amount } = req.body;
+      const result = await paymentService.processRefund(orderId, amount);
+      sendSuccess(res, result, 'Refund initiated');
     } catch (error) {
       next(error);
     }

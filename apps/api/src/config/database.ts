@@ -20,7 +20,8 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 if (process.env.NODE_ENV === 'development') {
-  (prisma as PrismaClient & { $on: Function }).$on('query', (e: { query: string; duration: number }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (prisma as any).$on('query', (e: { query: string; duration: number }) => {
     logger.debug(`Query: ${e.query} (${e.duration}ms)`);
   });
 }

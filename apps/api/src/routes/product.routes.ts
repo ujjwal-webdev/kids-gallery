@@ -1,20 +1,15 @@
 import { Router } from 'express';
 import { productController } from '../controllers/product.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { adminMiddleware } from '../middleware/admin.middleware';
 
 export const productRoutes = Router();
 
-// TODO: Implement product getAll
 productRoutes.get('/', productController.getAll);
+productRoutes.get('/featured', productController.getFeatured);
+productRoutes.get('/search', productController.search);
+productRoutes.get('/:slug', productController.getBySlug);
+productRoutes.post('/', authMiddleware, adminMiddleware, productController.create);
+productRoutes.put('/:id', authMiddleware, adminMiddleware, productController.update);
+productRoutes.delete('/:id', authMiddleware, adminMiddleware, productController.delete);
 
-// TODO: Implement product getById
-productRoutes.get('/:id', productController.getById);
-
-// TODO: Implement product create
-productRoutes.post('/', authMiddleware, productController.create);
-
-// TODO: Implement product update
-productRoutes.put('/:id', authMiddleware, productController.update);
-
-// TODO: Implement product delete
-productRoutes.delete('/:id', authMiddleware, productController.delete);
