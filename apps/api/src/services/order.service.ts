@@ -79,11 +79,11 @@ export const orderService = {
       const variantIds = cart.items
         .map((item: { variantId: string | null }) => item.variantId)
         .filter((id: string | null): id is string => id !== null);
-      const variants: Array<{ id: string; type: string; name: string }> = variantIds.length > 0
+      const variants: Array<{ id: string; type: string; name: string; productId: string }> = variantIds.length > 0
         ? await tx.productVariant.findMany({ where: { id: { in: variantIds } } })
         : [];
-      const variantMap = new Map<string, { type: string; name: string }>(
-        variants.map((v) => [v.id, v] as [string, { type: string; name: string }]),
+      const variantMap = new Map<string, { type: string; name: string; productId: string }>(
+        variants.map((v) => [v.id, v] as [string, { type: string; name: string; productId: string }]),
       );
 
       const newOrder = await tx.order.create({
@@ -106,7 +106,13 @@ export const orderService = {
               let variantName: string | null = null;
               if (item.variantId) {
                 const variant = variantMap.get(item.variantId);
-                variantName = variant ? `${variant.type}: ${variant.name}` : null;
+                if (!variant) {
+                  throw new ValidationError(`Invalid variantId '${item.variantId}' for product '${item.productId}'.`);
+                }
+                if (variant.productId !== item.productId) {
+                  throw new ValidationError(`Variant '${item.variantId}' does not belong to product '${item.productId}'.`);
+                }
+                variantName = `${variant.type}: ${variant.name}`;
               }
               return {
                 productId: item.productId,

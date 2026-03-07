@@ -7,4 +7,4 @@ export const createReviewSchema = z.object({
   images: z.array(z.string()).optional(),
 });
 
-export const updateReviewSchema = createReviewSchema.partial();
+export const updateReviewSchema = createReviewSchema.omit({ images: true }).partial();

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const addToCartSchema = z.object({
-  productId: z.string().min(1),
-  variantId: z.string().optional(),
+  productId: z.string().cuid(),
+  variantId: z.string().cuid().optional(),
   quantity: z.number().int().min(1, 'Quantity must be at least 1'),
 });
 
