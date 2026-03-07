@@ -1,13 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { sendSuccess, sendPaginated } from '../utils/apiResponse';
+import { sendSuccess } from '../utils/apiResponse';
 import { bannerService } from '../services/banner.service';
 
-// TODO: Implement banner controller methods
 export const bannerController = {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await bannerService.getAll(req.query as Record<string, string>);
-      sendPaginated(res, result.data, result.total, result.page, result.limit);
+      const result = await bannerService.getAllBanners();
+      sendSuccess(res, result);
     } catch (error) {
       next(error);
     }
@@ -15,7 +14,7 @@ export const bannerController = {
 
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await bannerService.getById(req.params.id);
+      const result = await bannerService.getBannerById(req.params.id);
       sendSuccess(res, result);
     } catch (error) {
       next(error);
@@ -24,7 +23,7 @@ export const bannerController = {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await bannerService.create(req.body);
+      const result = await bannerService.createBanner(req.body);
       sendSuccess(res, result, 'Banner created successfully', 201);
     } catch (error) {
       next(error);
@@ -33,7 +32,7 @@ export const bannerController = {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await bannerService.update(req.params.id, req.body);
+      const result = await bannerService.updateBanner(req.params.id, req.body);
       sendSuccess(res, result, 'Banner updated successfully');
     } catch (error) {
       next(error);
@@ -42,7 +41,7 @@ export const bannerController = {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await bannerService.delete(req.params.id);
+      await bannerService.deleteBanner(req.params.id);
       sendSuccess(res, null, 'Banner deleted successfully');
     } catch (error) {
       next(error);
