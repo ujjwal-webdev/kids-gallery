@@ -83,6 +83,10 @@ export const paymentService = {
       throw new ApiError('Razorpay is not configured', 500);
     }
 
+    if (!signature) {
+      throw new UnauthorizedError('Missing webhook signature');
+    }
+
     const expectedSignature = crypto
       .createHmac('sha256', config.razorpay.keySecret)
       .update(rawBody)
