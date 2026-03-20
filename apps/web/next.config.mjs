@@ -1,6 +1,6 @@
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: ['@kids-gallery/shared'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'res.cloudinary.com' },

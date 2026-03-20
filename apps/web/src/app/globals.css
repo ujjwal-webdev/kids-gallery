@@ -2,15 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 255, 255, 255;
-}
-
 @layer base {
   body {
-    @apply text-gray-900 bg-white;
+    @apply text-surface-on bg-surface antialiased selection:bg-primary-container selection:text-primary-on-container;
   }
 }
 
@@ -18,10 +12,17 @@
   .container-page {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
+  
+  /* Buttons */
   .btn-primary {
-    @apply bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+    @apply bg-primary hover:bg-primary/90 text-primary-on font-semibold py-3 px-6 rounded-full transition-all duration-300 hover:shadow-ambient active:scale-95;
   }
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-gray-800 font-semibold py-2 px-4 rounded-lg border border-gray-200 transition-colors;
+    @apply bg-secondary-container hover:bg-secondary-container/90 text-secondary-on-container font-semibold py-3 px-6 rounded-full transition-all duration-300 hover:shadow-ambient active:scale-95;
+  }
+  
+  /* Glassmorphism utility */
+  .glass-panel {
+    @apply bg-surface/80 backdrop-blur-glass border border-surface-container-lowest/20 shadow-glass;
   }
 }
