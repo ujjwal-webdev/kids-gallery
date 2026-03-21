@@ -2,31 +2,33 @@ import Link from 'next/link';
 
 export function HeroBanner() {
   return (
-    <div className="container-page py-6">
-      <div className="bg-[#fce6b5] rounded-[2.5rem] p-12 md:p-20 relative overflow-hidden flex flex-col md:flex-row items-center min-h-[500px]">
+    <section className="relative px-6 md:px-12 pt-8 pb-16 max-w-[1440px] mx-auto overflow-hidden">
+      <div className="bg-secondary-container rounded-xl md:rounded-xl overflow-hidden flex flex-col items-center justify-center text-center relative min-h-[500px] p-12 md:p-20">
         
-        {/* Decorative Star */}
-        <div className="absolute top-12 right-16 opacity-30">
-          <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor" className="text-[#cfa444]">
-            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-          </svg>
+        {/* Decorative Elements */}
+        <div className="absolute top-10 right-10 opacity-20 pointer-events-none">
+          <span className="material-symbols-outlined text-9xl text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
         </div>
-
-        <div className="flex-1 max-w-xl z-10 relative">
-          <h1 className="text-[5rem] font-bold text-[#4a3f35] leading-[1.1] tracking-tight mb-6">
-            Curation of <br />
-            <span className="text-primary block">Pure</span>
-            <span className="text-primary block">Wonder.</span>
+        <div className="absolute bottom-10 left-10 opacity-10 pointer-events-none">
+          <span className="material-symbols-outlined text-8xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>circle</span>
+        </div>
+        <div className="absolute top-1/2 left-20 transform -translate-y-1/2 opacity-10 pointer-events-none hidden lg:block">
+          <span className="material-symbols-outlined text-8xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>toys</span>
+        </div>
+        
+        <div className="z-10 max-w-3xl flex flex-col items-center">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-on-secondary-container leading-[1.1] tracking-tight mb-6">
+            Curation of <br/><span className="text-primary">Pure Wonder.</span>
           </h1>
-          <p className="text-title-md font-medium text-[#7a6b5d] mb-10 max-w-sm leading-relaxed">
+          <p className="text-xl text-on-secondary-container opacity-80 mb-10 max-w-xl font-medium">
             Discover a gallery-grade collection of wooden toys and artisan treasures designed to inspire generations.
           </p>
-          <Link href="/products" className="btn-primary py-4 px-10 text-lg shadow-ambient">
+          <Link href="/products" className="inline-block bg-primary text-on-primary px-10 py-5 rounded-full text-lg font-bold shadow-[0_12px_24px_rgba(174,47,52,0.2)] hover:shadow-[0_16px_32px_rgba(174,47,52,0.3)] transition-all transform hover:-translate-y-1">
             Shop Now
           </Link>
         </div>
         
       </div>
-    </div>
+    </section>
   );
 }

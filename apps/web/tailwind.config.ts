@@ -9,47 +9,53 @@ const config: Config = {
        * Derived from primary #ae2f34, secondary #785900, surface #fff9eb
        * ───────────────────────────────────────────── */
       colors: {
-        // Primary — high-energy CTAs, active states
-        primary: {
-          DEFAULT: '#ae2f34',
-          container: '#ffdad6',
-          on: '#ffffff',
-          'on-container': '#410003',
-        },
-        // Secondary — warmth, guidance
-        secondary: {
-          DEFAULT: '#785900',
-          container: '#ffdf9e',
-          on: '#ffffff',
-          'on-container': '#261900',
-        },
-        // Tertiary — complementary mint/teal accents
-        tertiary: {
-          DEFAULT: '#3a6658',
-          container: '#bcecd9',
-          'on-container': '#002117',
-        },
-        // Surface hierarchy — layered canvas
-        surface: {
-          DEFAULT: '#fff9eb',
-          'container-lowest': '#ffffff',
-          'container-low': '#fff3dc',
-          container: '#feeece',
-          'container-high': '#f9e8c8',
-          'container-highest': '#f3e2c2',
-          on: '#1d1c13',
-          'on-variant': '#4d4639',
-        },
-        // Outlines & borders
-        outline: {
-          DEFAULT: '#7f7667',
-          variant: '#d0c5b4',
-        },
-        // Error
-        error: {
-          DEFAULT: '#ba1a1a',
-          container: '#ffdad6',
-        },
+        "error-container": "#ffdad6",
+        "background": "#fff9eb",
+        "on-tertiary-container": "#00504c",
+        "on-secondary": "#ffffff",
+        "on-error-container": "#93000a",
+        "tertiary": "#006a65",
+        "on-tertiary": "#ffffff",
+        "primary-fixed": "#ffdad8",
+        "on-surface-variant": "#5d3f3e",
+        "on-error": "#ffffff",
+        "surface-container-lowest": "#ffffff",
+        "on-surface": "#1d1c13",
+        "tertiary-container": "#7cf6ec",
+        "on-tertiary-fixed": "#00201e",
+        "tertiary-fixed-dim": "#5dd9d0",
+        "primary-fixed-dim": "#ffb3b0",
+        "on-primary-fixed-variant": "#8c1520",
+        "on-background": "#1d1c13",
+        "primary-container": "#ffdad8",
+        "on-primary-container": "#8c1520",
+        "on-primary": "#ffffff",
+        "surface": "#fff9eb",
+        "surface-container-low": "#f9f3e5",
+        "secondary": "#785900",
+        "surface-bright": "#fff9eb",
+        "on-secondary-fixed-variant": "#5b4300",
+        "inverse-on-surface": "#f6f0e2",
+        "outline-variant": "#e7bdba",
+        "secondary-fixed": "#ffdf9e",
+        "surface-container": "#f3ede0",
+        "secondary-container": "#ffdf9e",
+        "error": "#ba1a1a",
+        "surface-container-highest": "#e8e2d4",
+        "primary": "#ae2f34",
+        "surface-container-high": "#ede8da",
+        "outline": "#926e6d",
+        "on-tertiary-fixed-variant": "#00504c",
+        "secondary-fixed-dim": "#fabd00",
+        "surface-dim": "#dfdacc",
+        "on-secondary-container": "#5b4300",
+        "surface-variant": "#e8e2d4",
+        "inverse-surface": "#333027",
+        "on-secondary-fixed": "#261a00",
+        "surface-tint": "#ae2f34",
+        "tertiary-fixed": "#7cf6ec",
+        "on-primary-fixed": "#410006",
+        "inverse-primary": "#ffb3b0"
       },
 
       /* ─────────────────────────────────────────

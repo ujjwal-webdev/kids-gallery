@@ -1,108 +1,83 @@
+'use client';
+
 import Link from 'next/link';
-import { formatPrice } from '@kids-gallery/shared';
 
-// Hardcoded fallback data to match the screenshot exactly if DB is empty
-const fallbackProducts = [
-  { id: '1', name: 'The Artisan Ark', price: 249.00, badge: "COLLECTOR'S EDITION", desc: "Limited availability", emoji: '🚢', bgColor: 'bg-white' },
-  { id: '2', name: 'Modern Stacker', price: 42.00, desc: "Natural Beechwood", emoji: '🥞', bgColor: 'bg-[#eae4de]' },
-  { id: '3', name: 'Savanna Puzzle', price: 38.00, desc: "Eco-friendly Inks", emoji: '🦒', bgColor: 'bg-[#7cf3e9]' },
-  { id: '4', name: 'Nordic Play Kitchen', price: 315.00, desc: "The ultimate dream kitchen for little chefs. Sustainable pine...", emoji: '🍳', bgColor: 'bg-[#ffcf70]' }
-];
-
-export async function FeaturedProducts() {
-  let products = fallbackProducts;
-  
-  // Try fetching, but map to the hardcoded structure if data exists
-  try {
-    const res = await fetch('http://localhost:4000/api/products/featured', { cache: 'no-store' });
-    const data = await res.json();
-    if (data.success && data.data.length >= 4) {
-      products = data.data.slice(0, 4).map((p: any, i: number) => ({
-        id: p.id,
-        name: p.name,
-        price: p.sellingPrice,
-        desc: fallbackProducts[i].desc,
-        badge: i === 0 ? "COLLECTOR'S EDITION" : undefined,
-        emoji: fallbackProducts[i].emoji,
-        bgColor: fallbackProducts[i].bgColor
-      }));
-    }
-  } catch (error) {
-    console.error('Failed to fetch featured products', error);
-  }
-
+export function FeaturedProducts() {
   return (
-    <section className="mt-24 mb-24">
-      <div className="text-center mb-12">
-        <h2 className="text-[2.5rem] font-bold text-[#1a1a1a] tracking-tight">Featured Treasures</h2>
-        <p className="text-[#5a5a5a] text-sm mt-3">Hand-picked heirloom quality pieces for your little ones.</p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
-        
-        {/* Item 1: Tall Left Card */}
-        <Link href={`/products/${products[0].id}`} className={`col-span-1 md:row-span-2 rounded-[2rem] p-8 ${products[0].bgColor} flex flex-col justify-between group shadow-sm hover:shadow-md transition-shadow`}>
-          <div>
-            {products[0].badge && (
-              <span className="inline-block bg-[#ae2f34] text-white text-[10px] font-bold tracking-wider px-3 py-1 rounded-full mb-4 uppercase">
-                {products[0].badge}
-              </span>
-            )}
-            <h3 className="text-2xl font-bold text-[#1a1a1a] mb-1">{products[0].name}</h3>
-            <p className="text-[#7a6b5d] text-sm mb-4">{products[0].desc}</p>
-            <span className="text-lg font-bold text-[#ae2f34]">{formatPrice(products[0].price)}</span>
-          </div>
-          <div className="flex-1 min-h-[200px] flex items-center justify-center text-8xl group-hover:scale-105 transition-transform duration-500">
-            {products[0].emoji}
-          </div>
-        </Link>
+    <section className="py-16 bg-surface-container-low">
+      <div className="max-w-[1440px] mx-auto px-6 md:px-12">
+        <div className="text-center mb-16">
+          <h2 className="text-5xl font-black tracking-tighter mb-4">Featured Treasures</h2>
+          <p className="text-secondary font-medium text-lg">Hand-picked heirloom quality pieces for your little ones.</p>
+        </div>
 
-        {/* Item 2: Top Middle Card */}
-        <Link href={`/products/${products[1].id}`} className={`col-span-1 md:row-span-1 rounded-[2rem] p-6 ${products[1].bgColor} flex flex-col justify-between group relative shadow-sm hover:shadow-md transition-shadow`}>
-          <div className="w-full flex-1 bg-white/50 rounded-2xl mb-4 flex items-center justify-center text-4xl group-hover:scale-105 transition-transform duration-300">
-            {products[1].emoji}
-          </div>
-          <div className="flex items-end justify-between">
-            <div>
-              <h3 className="font-bold text-[#1a1a1a] text-sm mb-1">{products[1].name}</h3>
-              <p className="text-[#7a6b5d] text-xs mb-2">{products[1].desc}</p>
-              <span className="font-bold text-[#1a1a1a] text-sm">{formatPrice(products[1].price)}</span>
+        <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 h-auto md:h-[800px]">
+          
+          {/* Large Feature Card */}
+          <Link href="/products" className="block md:col-span-2 md:row-span-2 bg-surface-container-lowest rounded-lg p-8 flex flex-col justify-between group cursor-pointer shadow-sm hover:shadow-xl transition-all relative overflow-hidden min-h-[400px] border border-outline-variant/30 hover:border-primary/30">
+            <div className="z-10">
+              <span className="bg-primary text-on-primary text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">Collector's Edition</span>
+              <h3 className="text-4xl font-extrabold mt-6 mb-2 tracking-tight">The Artisan Ark</h3>
+              <p className="text-secondary font-medium text-lg">Limited availability, hand-crafted.</p>
+              <p className="text-primary font-bold text-3xl mt-6">₹14,999</p>
             </div>
-            <button className="w-8 h-8 bg-[#1a1a1a] text-white rounded-full flex items-center justify-center hover:bg-primary transition-colors">
-              +
-            </button>
-          </div>
-        </Link>
-
-        {/* Item 3: Top Right Card */}
-        <Link href={`/products/${products[2].id}`} className={`col-span-1 md:row-span-1 rounded-[2rem] p-6 ${products[2].bgColor} flex flex-col justify-between group relative shadow-sm hover:shadow-md transition-shadow`}>
-          <div className="w-full flex-1 bg-white/50 rounded-2xl mb-4 flex items-center justify-center text-4xl group-hover:scale-105 transition-transform duration-300">
-            {products[2].emoji}
-          </div>
-          <div className="flex items-end justify-between">
-            <div>
-              <h3 className="font-bold text-[#1a1a1a] text-sm mb-1">{products[2].name}</h3>
-              <p className="text-[#1a1a1a]/60 text-xs mb-2">{products[2].desc}</p>
-              <span className="font-bold text-[#1a1a1a] text-sm">{formatPrice(products[2].price)}</span>
+            {/* Visual element placeholder instead of image */}
+            <div className="absolute -bottom-10 -right-10 w-96 h-96 bg-primary-container rounded-full mix-blend-multiply opacity-50 transition-transform group-hover:scale-110 blur-3xl text-center flex items-center justify-center"></div>
+             <div className="absolute bottom-10 right-10 text-[12rem] drop-shadow-2xl transition-transform group-hover:scale-110 group-hover:-rotate-3">
+              🚢
             </div>
-            <button className="w-8 h-8 bg-[#1a1a1a] text-white rounded-full flex items-center justify-center hover:bg-primary transition-colors">
-              -
-            </button>
-          </div>
-        </Link>
+          </Link>
 
-        {/* Item 4: Bottom Right Wide Card */}
-        <Link href={`/products/${products[3].id}`} className={`col-span-1 md:col-span-2 md:row-span-1 rounded-[2rem] p-8 ${products[3].bgColor} flex items-center justify-between group shadow-sm hover:shadow-md transition-shadow overflow-hidden`}>
-          <div className="max-w-[200px] z-10">
-            <h3 className="text-xl font-bold text-[#1a1a1a] mb-2">{products[3].name}</h3>
-            <p className="text-[#7a6b5d] text-xs mb-4 leading-relaxed">{products[3].desc}</p>
-            <span className="text-lg font-bold text-[#ae2f34]">{formatPrice(products[3].price)}</span>
-          </div>
-          <div className="w-48 h-48 bg-[#29564f] rounded-2xl flex items-center justify-center text-7xl shadow-inner group-hover:scale-105 transition-transform duration-500">
-            {products[3].emoji}
-          </div>
-        </Link>
+          {/* Small Card 1 */}
+          <Link href="/products" className="block bg-surface-container-highest rounded-lg p-6 flex flex-col group cursor-pointer shadow-sm hover:shadow-xl transition-all overflow-hidden min-h-[350px] border border-outline-variant/10 hover:border-primary/20">
+            <h3 className="font-bold text-2xl mb-1 text-on-surface">Modern Stacker</h3>
+            <p className="text-secondary text-sm mb-4">Natural Beechwood</p>
+            <div className="flex-grow flex items-center justify-center">
+               <div className="text-7xl drop-shadow-md group-hover:scale-110 transition-transform my-4">🧱</div>
+            </div>
+            <div className="mt-auto flex justify-between items-center">
+              <span className="font-bold text-2xl text-primary">₹2,499</span>
+              <button 
+                className="bg-primary text-on-primary w-10 h-10 rounded-full flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform"
+                onClick={(e) => e.preventDefault()}
+              >
+                <span className="material-symbols-outlined text-sm font-bold">add</span>
+              </button>
+            </div>
+          </Link>
 
+          {/* Small Card 2 */}
+          <Link href="/products" className="block bg-tertiary-container rounded-lg p-6 flex flex-col group cursor-pointer shadow-sm hover:shadow-xl transition-all overflow-hidden min-h-[350px] border border-outline-variant/10 hover:border-primary/20">
+            <h3 className="font-bold text-2xl mb-1 text-on-tertiary-container">Savanna Puzzle</h3>
+            <p className="text-tertiary text-sm mb-4">Eco-friendly Inks</p>
+            <div className="flex-grow flex items-center justify-center">
+               <div className="text-7xl drop-shadow-md group-hover:scale-110 transition-transform my-4">🦒</div>
+            </div>
+            <div className="mt-auto flex justify-between items-center">
+              <span className="font-bold text-2xl text-tertiary">₹1,299</span>
+              <button 
+                className="bg-tertiary text-on-tertiary w-10 h-10 rounded-full flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform"
+                onClick={(e) => e.preventDefault()}
+              >
+                <span className="material-symbols-outlined text-sm font-bold">add</span>
+              </button>
+            </div>
+          </Link>
+
+          {/* Wide Card */}
+          <Link href="/products" className="block md:col-span-2 bg-secondary-container rounded-lg p-8 flex items-center justify-between group cursor-pointer shadow-sm hover:shadow-xl transition-all overflow-hidden min-h-[350px] border border-outline-variant/10 hover:border-secondary/30 relative">
+            <div className="z-10 max-w-[50%]">
+              <h3 className="text-3xl font-extrabold mb-2 text-on-secondary-container">Nordic Play Kitchen</h3>
+              <p className="text-on-secondary-container opacity-70 mb-6 font-medium line-clamp-2">The ultimate dream kitchen for little chefs. Sustainable pine and steel.</p>
+              <span className="font-bold text-3xl text-primary">₹18,500</span>
+            </div>
+            <div className="absolute right-0 top-0 bottom-0 w-1/2 flex items-center justify-center">
+              <div className="absolute inset-0 bg-secondary rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+              <div className="text-[10rem] drop-shadow-xl transform group-hover:scale-105 transition-transform z-10">🍳</div>
+            </div>
+          </Link>
+
+        </div>
       </div>
     </section>
   );

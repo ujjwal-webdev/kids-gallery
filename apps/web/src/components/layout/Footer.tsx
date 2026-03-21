@@ -2,43 +2,55 @@ import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-16">
-      <div className="container-page py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-white font-bold text-lg mb-4">Kid's Gallery 🎨</h3>
-            <p className="text-sm">Your one-stop shop for stationery, gifts, party supplies, and more!</p>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Shop</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/categories/stationery" className="hover:text-white">Stationery</Link></li>
-              <li><Link href="/categories/gift-items-kids" className="hover:text-white">Kids Gifts</Link></li>
-              <li><Link href="/categories/party-supplies" className="hover:text-white">Party Supplies</Link></li>
-              <li><Link href="/categories/art-craft" className="hover:text-white">Art & Craft</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Account</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/auth/login" className="hover:text-white">Login</Link></li>
-              <li><Link href="/orders" className="hover:text-white">My Orders</Link></li>
-              <li><Link href="/wishlist" className="hover:text-white">Wishlist</Link></li>
-              <li><Link href="/profile" className="hover:text-white">Profile</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Help</h4>
-            <ul className="space-y-2 text-sm">
-              <li><span className="hover:text-white cursor-pointer">Contact Us</span></li>
-              <li><span className="hover:text-white cursor-pointer">Shipping Policy</span></li>
-              <li><span className="hover:text-white cursor-pointer">Return Policy</span></li>
-              <li><span className="hover:text-white cursor-pointer">Privacy Policy</span></li>
-            </ul>
+    <footer className="w-full rounded-t-[3rem] mt-20 bg-surface-container-low">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 px-6 md:px-16 py-16 max-w-[1440px] mx-auto text-center md:text-left">
+        {/* Brand Info */}
+        <div>
+          <div className="text-xl font-bold text-[#785900] mb-6">Kid's Gallery</div>
+          <p className="text-body-md text-[#785900] mb-6">
+            We believe play is the highest form of research. Our curated collections bring beauty and imagination into the nursery.
+          </p>
+          <div className="flex justify-center md:justify-start gap-4">
+            <Link href="#" className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+              <span className="material-symbols-outlined">star</span>
+            </Link>
+            <Link href="#" className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+              <span className="material-symbols-outlined">favorite</span>
+            </Link>
+            <Link href="#" className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+              <span className="material-symbols-outlined">explore</span>
+            </Link>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-          <p>© {new Date().getFullYear()} Kid's Gallery. All rights reserved. | Made with ❤️ in India</p>
+        
+        {/* Quick Links */}
+        <div className="flex flex-col gap-4">
+          <h4 className="font-bold text-lg mb-2 text-on-background">Our World</h4>
+          <Link href="/about" className="text-body-md text-[#785900] hover:underline decoration-2 underline-offset-4 transition-opacity">About Us</Link>
+          <Link href="/shipping" className="text-body-md text-[#785900] hover:underline decoration-2 underline-offset-4 transition-opacity">Shipping Policy</Link>
+          <Link href="/contact" className="text-body-md text-[#785900] hover:underline decoration-2 underline-offset-4 transition-opacity">Contact Support</Link>
+          <a href="#" className="text-body-md text-[#785900] hover:underline decoration-2 underline-offset-4 transition-opacity">Instagram</a>
+          <a href="#" className="text-body-md text-[#785900] hover:underline decoration-2 underline-offset-4 transition-opacity">Pinterest</a>
+        </div>
+        
+        {/* Shop Info */}
+        <div className="flex flex-col gap-4">
+          <h4 className="font-bold text-lg mb-2 text-on-background">Visit the Gallery</h4>
+          <p className="text-body-md text-[#785900]">
+            123 Imagination Lane<br/>Curiosity District<br/>New York, NY 10001
+          </p>
+          <p className="text-body-md text-[#785900] mt-4">
+            Open Daily: 10am - 6pm
+          </p>
+        </div>
+      </div>
+      
+      <div className="border-t border-outline-variant/30 py-8 px-6 md:px-16 max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <p className="text-body-md text-[#785900] opacity-60">© {new Date().getFullYear()} Kid's Gallery. Made with imagination.</p>
+        <div className="flex gap-6 opacity-60">
+          <span className="material-symbols-outlined text-secondary">payments</span>
+          <span className="material-symbols-outlined text-secondary">shopping_bag</span>
+          <span className="material-symbols-outlined text-secondary">verified</span>
         </div>
       </div>
     </footer>

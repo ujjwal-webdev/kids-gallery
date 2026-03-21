@@ -4,46 +4,52 @@ import { FeaturedProducts } from '@/components/home/FeaturedProducts';
 
 export default function HomePage() {
   return (
-    <div>
+    <main>
       <HeroBanner />
-      <div className="container-page py-10 space-y-16">
-        <CategoryGrid />
-        <FeaturedProducts />
-        
-        {/* Newsletter Section from new Desktop Design */}
-        <section className="bg-[#ffd9dc] rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden mb-24" style={{ backgroundImage: 'radial-gradient(#f4babb 2px, transparent 2px)', backgroundSize: '32px 32px' }}>
-          <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
+      <CategoryGrid />
+      <FeaturedProducts />
+      
+      {/* Newsletter Section */}
+      <section className="py-24 px-6 md:px-12 max-w-[1440px] mx-auto">
+        <div className="bg-primary-container rounded-xl md:rounded-xl p-12 md:p-24 text-center relative overflow-hidden">
+          
+          {/* Background Decoration */}
+          <div 
+            className="absolute inset-0 opacity-10 pointer-events-none" 
+            style={{ backgroundImage: 'radial-gradient(#ae2f34 2px, transparent 2px)', backgroundSize: '24px 24px' }}>
+          </div>
+          
+          <div className="relative z-10 max-w-2xl mx-auto">
+            <span className="material-symbols-outlined text-6xl text-primary mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>mail</span>
             
-            <div className="text-[#ae2f34] mb-4">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
-            </div>
-            
-            <h2 className="text-[2.5rem] font-bold text-[#ae2f34] mb-4 tracking-tight">Join the Playgroup</h2>
-            <p className="text-[#ae2f34] text-sm mb-10 leading-relaxed max-w-md mx-auto">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-on-primary-container mb-6 tracking-tight">
+              Join the Playgroup
+            </h2>
+            <p className="text-lg text-on-primary-container opacity-80 mb-10">
               Sign up to receive early access to new collection drops, gallery events, and stories from our workshop.
             </p>
             
-            <form className="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-xl mx-auto mb-6">
+            <form className="flex flex-col md:flex-row gap-4 max-w-lg mx-auto">
               <input 
-                type="email" 
+                className="flex-grow px-8 py-5 rounded-full border-none focus:ring-4 focus:ring-primary/20 text-lg font-medium shadow-inner outline-none text-[#1d1c13]" 
                 placeholder="Your email address" 
-                className="flex-1 bg-white text-[#1a1a1a] rounded-full px-8 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#ae2f34]/30 shadow-sm"
+                type="email"
                 required
               />
-              <button type="submit" className="bg-[#ae2f34] text-white font-bold rounded-full py-4 px-10 text-sm hover:bg-[#8e2429] transition-colors shadow-md">
+              <button 
+                className="bg-primary text-on-primary px-10 py-5 rounded-full font-bold text-lg hover:bg-on-primary-fixed-variant transition-colors shadow-lg" 
+                type="submit"
+              >
                 Subscribe
               </button>
             </form>
             
-            <p className="text-[10px] text-[#ae2f34]/60">
+            <p className="mt-6 text-xs text-on-primary-container opacity-50 font-medium">
               By subscribing, you agree to our Privacy Policy and Terms of Service.
             </p>
           </div>
-        </section>
-      </div>
-    </div>
+        </div>
+      </section>
+    </main>
   );
 }
