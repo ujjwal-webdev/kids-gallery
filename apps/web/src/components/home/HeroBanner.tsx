@@ -1,33 +1,42 @@
-import Link from 'next/link';
+'use client';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export function HeroBanner() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   return (
-    <section className="relative px-6 md:px-12 pt-8 pb-16 max-w-[1440px] mx-auto overflow-hidden">
-      <div className="bg-secondary-container rounded-xl md:rounded-xl overflow-hidden flex flex-col items-center justify-center text-center relative min-h-[500px] p-12 md:p-20">
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-10 right-10 opacity-20 pointer-events-none">
-          <span className="material-symbols-outlined text-9xl text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-        </div>
-        <div className="absolute bottom-10 left-10 opacity-10 pointer-events-none">
-          <span className="material-symbols-outlined text-8xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>circle</span>
-        </div>
-        <div className="absolute top-1/2 left-20 transform -translate-y-1/2 opacity-10 pointer-events-none hidden lg:block">
-          <span className="material-symbols-outlined text-8xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>toys</span>
-        </div>
-        
-        <div className="z-10 max-w-3xl flex flex-col items-center">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-on-secondary-container leading-[1.1] tracking-tight mb-6">
-            Curation of <br/><span className="text-primary">Pure Wonder.</span>
-          </h1>
-          <p className="text-xl text-on-secondary-container opacity-80 mb-10 max-w-xl font-medium">
-            Discover a gallery-grade collection of wooden toys and artisan treasures designed to inspire generations.
-          </p>
-          <Link href="/products" className="inline-block bg-primary text-on-primary px-10 py-5 rounded-full text-lg font-bold shadow-[0_12px_24px_rgba(174,47,52,0.2)] hover:shadow-[0_16px_32px_rgba(174,47,52,0.3)] transition-all transform hover:-translate-y-1">
-            Shop Now
-          </Link>
-        </div>
-        
+    <section className="relative w-full py-32 px-4 overflow-hidden flex flex-col items-center justify-center min-h-[40vh]">
+      <div className="text-center max-w-3xl relative z-10 w-full mt-4">
+        <p className="text-on-surface-variant font-medium text-lg mb-8 max-w-xl mx-auto opacity-80">
+          An interactive ecommerce app in kids category for children, a colorful palette with bright kids.
+        </p>
+
+        <form onSubmit={handleSearch} className="relative w-full max-w-2xl mx-auto shadow-ambient-lg rounded-full bg-white flex items-center p-2 transition-transform focus-within:scale-[1.02]">
+          <input 
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search"
+            className="flex-1 w-full bg-transparent text-2xl font-medium text-on-surface px-6 py-4 focus:outline-none border-none ring-0 placeholder:text-on-surface-variant/40"
+          />
+          <button 
+            type="submit"
+            className="bg-secondary-fixed-dim hover:bg-secondary transition-colors w-16 h-16 rounded-full flex items-center justify-center shrink-0"
+            aria-label="Search"
+          >
+            <span className="material-symbols-outlined text-3xl text-on-secondary-fixed">search</span>
+          </button>
+        </form>
       </div>
     </section>
   );

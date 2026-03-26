@@ -1,50 +1,24 @@
-'use client';
-
 import { ProductCard } from './ProductCard';
+import { Product } from '@/lib/services';
 
-const MOCK_TOYS = [
-  {
-    id: '1',
-    name: 'Building Blocks Set',
-    slug: 'building-blocks-set',
-    ageRange: 'Ages 3-6',
-    price: '$34.99',
-    emoji: '🧱',
-    isNew: false,
-  },
-  {
-    id: '2',
-    name: 'Cuddly Plush Bear',
-    slug: 'cuddly-plush-bear',
-    ageRange: 'Ages 0+',
-    price: '$22.00',
-    emoji: '🧸',
-    isNew: false,
-  },
-  {
-    id: '3',
-    name: 'Turbo Racer RC Car',
-    slug: 'turbo-racer-rc',
-    ageRange: 'Ages 8+',
-    price: '$45.50',
-    emoji: '🏎️',
-    isNew: true,
-  },
-  {
-    id: '4',
-    name: 'Little Artist Kit',
-    slug: 'little-artist-kit',
-    ageRange: 'Ages 5+',
-    price: '$29.99',
-    emoji: '🎨',
-    isNew: false,
+interface ProductGridProps {
+  products: Product[];
+}
+
+export function ProductGrid({ products }: ProductGridProps) {
+  if (!products || products.length === 0) {
+    return (
+      <div className="py-24 text-center">
+        <span className="material-symbols-outlined text-6xl text-secondary mb-4 opacity-50">inventory_2</span>
+        <h3 className="text-2xl font-bold text-on-surface mb-2">No products found</h3>
+        <p className="text-on-surface-variant font-medium">Try removing some filters or checking back later!</p>
+      </div>
+    );
   }
-];
 
-export function ProductGrid() {
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-      {MOCK_TOYS.map((product) => (
+      {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
     </section>

@@ -1,39 +1,55 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Category } from '@/lib/services';
 
-export function Header() {
+interface HeaderProps {
+  categories: Category[];
+}
+
+export function Header({ categories }: HeaderProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const navLinks = [
-    { name: 'Art Supplies', href: '/products' },
-    { name: 'Toys', href: '/products' },
-    { name: 'Decor', href: '/products' },
-    { name: 'Books', href: '/products' },
-    { name: 'Gifts', href: '/products' }
-  ];
+  // Pick top 5 categories for the nav, or just use them all if < 5
+  const navCategories = categories.slice(0, 5);
 
   return (
     <header className="w-full sticky top-0 z-50 bg-[#fff9eb] shadow-[0_32px_64px_rgba(29,28,19,0.05)]">
       <nav className="flex justify-between items-center px-6 md:px-12 py-6 max-w-[1440px] mx-auto">
-        <Link href="/" className="text-3xl font-black text-[#ae2f34] tracking-tighter">
-          Kid's Gallery
+        <Link href="/" className="text-4xl font-display font-medium tracking-wide flex items-baseline">
+          <span className="text-primary hover:-translate-y-1 transition-transform">K</span>
+          <span className="text-secondary-fixed-dim hover:-translate-y-1 transition-transform delay-75">i</span>
+          <span className="text-tertiary-fixed-dim hover:-translate-y-1 transition-transform delay-100">d</span>
+          <span className="text-primary hover:-translate-y-1 transition-transform delay-150">'</span>
+          <span className="text-tertiary-fixed-dim hover:-translate-y-1 transition-transform delay-200">s</span>
+          <span className="text-transparent">&nbsp;</span>
+          <span className="text-tertiary-fixed-dim hover:-translate-y-1 transition-transform">G</span>
+          <span className="text-primary hover:-translate-y-1 transition-transform delay-75">a</span>
+          <span className="text-secondary hover:-translate-y-1 transition-transform delay-100">l</span>
+          <span className="text-primary hover:-translate-y-1 transition-transform delay-150">l</span>
+          <span className="text-secondary hover:-translate-y-1 transition-transform delay-200">e</span>
+          <span className="text-primary hover:-translate-y-1 transition-transform delay-300">r</span>
+          <span className="text-tertiary-fixed-dim hover:-translate-y-1 transition-transform delay-[400ms]">y</span>
         </Link>
         <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+          {navCategories.map((cat) => {
+            const isProductsRoute = pathname === '/products';
+            const isCurrentCategory = searchParams.get('category') === cat.slug;
+            const isActive = isProductsRoute && isCurrentCategory;
+
             return (
               <Link
-                key={link.name}
-                href={link.href}
+                key={cat.id}
+                href={`/products?category=${cat.slug}`}
                 className={
                   isActive
                     ? "text-[#ae2f34] border-b-4 border-[#ae2f34] pb-1 font-bold tracking-tight hover:text-[#ae2f34] transition-colors duration-300"
                     : "text-[#785900] font-medium tracking-tight hover:text-[#ae2f34] transition-colors duration-300"
                 }
               >
-                {link.name}
+                {cat.name}
               </Link>
             );
           })}

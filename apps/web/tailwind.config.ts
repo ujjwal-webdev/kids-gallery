@@ -59,10 +59,11 @@ const config: Config = {
       },
 
       /* ─────────────────────────────────────────
-       * Typography — Plus Jakarta Sans
+       * Typography — Nunito & Fredoka
        * ───────────────────────────────────────── */
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-nunito)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-fredoka)', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         'display-lg': ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '800' }],

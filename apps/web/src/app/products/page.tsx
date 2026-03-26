@@ -1,9 +1,17 @@
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { ProductFilters } from '@/components/products/ProductFilters';
+import { getProducts } from '@/lib/services';
 
 export const metadata = { title: 'Toys | Kid\'s Gallery' };
 
-export default function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
+  const categorySlug = typeof searchParams.category === 'string' ? searchParams.category : undefined;
+  const products = await getProducts(categorySlug);
+
   return (
     <main className="max-w-[1440px] mx-auto px-6 md:px-12 pt-8 md:pt-12 pb-24">
       {/* Discovery Zone Header */}
@@ -26,7 +34,7 @@ export default function ProductsPage() {
       <ProductFilters />
 
       {/* Product Grid */}
-      <ProductGrid />
+      <ProductGrid products={products} />
 
       {/* Promotion Section */}
       <section className="mt-24 rounded-xl overflow-hidden bg-tertiary-container/30 relative flex flex-col md:flex-row items-center border border-outline-variant/10">

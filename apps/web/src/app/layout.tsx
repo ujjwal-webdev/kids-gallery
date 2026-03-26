@@ -1,12 +1,20 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Nunito, Fredoka } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { GlobalDecorations } from '@/components/layout/GlobalDecorations';
+import { getCategories } from '@/lib/services';
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const nunito = Nunito({
   subsets: ['latin'],
-  variable: '--font-plus-jakarta-sans',
+  variable: '--font-nunito',
+  display: 'swap',
+});
+
+const fredoka = Fredoka({
+  subsets: ['latin'],
+  variable: '--font-fredoka',
   display: 'swap',
 });
 
@@ -19,11 +27,18 @@ export const metadata: Metadata = {
     "Kid's Gallery — Your one-stop shop for stationery, gifts, party supplies, and more!",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const categories = await getCategories();
+
   return (
-    <html lang="en" className={plusJakartaSans.variable}>
+    <html lang="en" suppressHydrationWarning className={`${nunito.variable} ${fredoka.variable}`}>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&display=swap" rel="stylesheet" />
+      </head>
       <body className="font-sans">
-        <Header />
+        <GlobalDecorations />
+        <Header categories={categories} />
         <main className="min-h-screen">{children}</main>
         <Footer />
       </body>

@@ -39,3 +39,20 @@
     padding-right: 1rem;
   }
 }
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  @keyframes float-around {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    33% { transform: translate(15px, -25px) rotate(10deg) scale(1.05); }
+    66% { transform: translate(-10px, -15px) rotate(-5deg) scale(0.95); }
+    100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  }
+
+  .animate-float-around {
+    animation: float-around ease-in-out infinite;
+  }
+}

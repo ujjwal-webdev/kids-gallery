@@ -139,3 +139,21 @@ In this system, depth is a feeling, not a shadow effect.
 - **Don't** use sharp corners. Anything less than `sm` (0.5rem) is too aggressive for this system.
 - **Don't** crowd the interface. If the screen feels busy, increase the spacing tokens (e.g., move from `10` to `16`).
 - **Don't** use pure black for text. Use `on_surface` (`#1d1c13`) to maintain the soft, premium feel of the "Digital Curator."
+
+---
+
+## 7. Illustrations & Avatar Assets
+
+To maintain absolute visual consistency across the "Digital Playroom," all future category avatars and character illustrations must be generated using the following strict AI prompt formula. This ensures they perfectly match the existing aesthetic:
+
+### The AI Prompt Formula
+> A flat vector minimalist kawaii cartoon illustration of a cute child's upper body **[ACTION OR HOLDING OBJECT]**. Solid pastel **[COLOR]** background. Simple clean bold outlines, flat colors, modern cute UI avatar style, children's store digital art. No text.
+
+### Example Usage:
+*   *For a new "Tech Toys" category:* "A flat vector minimalist kawaii cartoon illustration of a cute child's upper body holding a remote control robot toy. Solid pastel blue background. Simple clean bold outlines, flat colors, modern cute UI avatar style..."
+*   *For a new "Books" category:* "...holding an open storybook with a magical castle on the page. Solid pastel mint background..."
+
+**Rules for Avatars:**
+- Always specify "upper body" to ensure the framing is a waist-up portrait.
+- Always demand a "Solid pastel [color] background" so the avatar can seamlessly blend into the rounded Tailwind cards without awkward cropping.
+- Never allow text or complex 3D shading. The style must remain "flat vector minimalist."

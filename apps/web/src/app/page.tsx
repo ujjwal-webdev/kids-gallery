@@ -1,13 +1,19 @@
 import { HeroBanner } from '@/components/home/HeroBanner';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
 import { FeaturedProducts } from '@/components/home/FeaturedProducts';
+import { getCategories, getFeaturedProducts } from '@/lib/services';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [categories, featuredProducts] = await Promise.all([
+    getCategories(),
+    getFeaturedProducts(),
+  ]);
+
   return (
     <main>
       <HeroBanner />
-      <CategoryGrid />
-      <FeaturedProducts />
+      <CategoryGrid categories={categories} />
+      <FeaturedProducts products={featuredProducts} />
       
       {/* Newsletter Section */}
       <section className="py-24 px-6 md:px-12 max-w-[1440px] mx-auto">
