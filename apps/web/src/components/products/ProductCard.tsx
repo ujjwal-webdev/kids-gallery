@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/lib/services';
+import { useCartStore } from '@/store/cartStore';
 
 export interface ProductCardProps {
   product: Product;
@@ -10,23 +12,46 @@ export interface ProductCardProps {
 const VISUAL_FALLBACKS = ['🧱', '🧸', '🏎️', '🎨', '🧩', '🚂', '🥁'];
 
 export function ProductCard({ product }: ProductCardProps) {
-  // Hash the ID to pick a consistent emoji fallback
+  const addItem = useCartStore((s) => s.addItem);
+  const [added, setAdded] = useState(false);
+
   const charCode = product.id.charCodeAt(product.id.length - 1) || 0;
   const emoji = VISUAL_FALLBACKS[charCode % VISUAL_FALLBACKS.length];
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: Number(product.sellingPrice),
+      mrp: Number(product.mrp),
+      image: product.images?.[0]?.url,
+      quantity: 1,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1200);
+  };
 
   return (
     <Link href={`/products/${product.slug}`} className="group bg-surface-container-lowest rounded-xl p-4 transition-all duration-300 hover:shadow-[0_32px_64px_rgba(29,28,19,0.06)] flex flex-col border border-outline-variant/10 cursor-pointer">
       <div className="relative aspect-square rounded-lg bg-surface-container overflow-hidden mb-6 flex items-center justify-center">
-        
-        {/* Placeholder Emoji instead of img src */}
-        <div className="w-full h-full flex items-center justify-center bg-surface-container-high text-9xl group-hover:scale-110 transition-transform duration-300 drop-shadow-md">
-          {emoji}
-        </div>
+        {product.images?.[0]?.url ? (
+          <img
+            src={product.images[0].url}
+            alt={product.images[0].altText || product.name}
+            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-surface-container-high text-9xl group-hover:scale-110 transition-transform duration-300 drop-shadow-md">
+            {emoji}
+          </div>
+        )}
         
         <button 
           className="absolute top-4 right-4 h-10 w-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-primary shadow-sm hover:bg-primary hover:text-white transition-all z-10" 
           aria-label="Favorite"
-          onClick={(e) => { e.preventDefault(); /* handle favorite */ }}
+          onClick={(e) => { e.preventDefault(); }}
         >
           <span className="material-symbols-outlined text-[20px]">favorite</span>
         </button>
@@ -45,14 +70,17 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="mt-auto flex justify-between items-center">
           <span className="text-2xl font-black text-on-surface">₹{product.sellingPrice}</span>
           <button 
-            className="bg-secondary-container text-on-secondary-container h-12 w-12 rounded-full flex items-center justify-center hover:scale-110 transition-transform active:scale-95 shadow-sm"
+            className={`h-12 w-12 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-sm ${
+              added
+                ? 'bg-green-500 text-white scale-110'
+                : 'bg-secondary-container text-on-secondary-container hover:scale-110'
+            }`}
             aria-label={`Add ${product.name} to cart`}
-            onClick={(e) => {
-              e.preventDefault();
-              console.log('Added to cart:', product.name);
-            }}
+            onClick={handleAddToCart}
           >
-            <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>add</span>
+            <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+              {added ? 'check' : 'add'}
+            </span>
           </button>
         </div>
       </div>

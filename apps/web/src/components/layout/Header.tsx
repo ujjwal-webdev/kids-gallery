@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Category } from '@/lib/services';
+import { useCartStore } from '@/store/cartStore';
 
 interface HeaderProps {
   categories: Category[];
@@ -11,8 +12,8 @@ interface HeaderProps {
 export function Header({ categories }: HeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const cartItemCount = useCartStore((s) => s.totalItems());
 
-  // Pick top 5 categories for the nav, or just use them all if < 5
   const navCategories = categories.slice(0, 5);
 
   return (
@@ -63,8 +64,13 @@ export function Header({ categories }: HeaderProps) {
               type="text"
             />
           </div>
-          <Link href="/cart" className="scale-105 active:scale-95 transition-transform text-[#ae2f34]">
+          <Link href="/cart" className="relative scale-105 active:scale-95 transition-transform text-[#ae2f34]">
             <span className="material-symbols-outlined">shopping_cart</span>
+            {cartItemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#ae2f34] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-bounce-once">
+                {cartItemCount > 9 ? '9+' : cartItemCount}
+              </span>
+            )}
           </Link>
           <Link href="/wishlist" className="scale-105 active:scale-95 transition-transform text-[#ae2f34]">
             <span className="material-symbols-outlined">favorite</span>
@@ -77,3 +83,4 @@ export function Header({ categories }: HeaderProps) {
     </header>
   );
 }
+

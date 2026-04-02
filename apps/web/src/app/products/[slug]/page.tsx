@@ -1,24 +1,31 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getProductBySlug } from '@/lib/services';
+import { ProductDetailActions } from '@/components/products/ProductDetailActions';
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const product = await getProductBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
   return { title: product ? `${product.name} | Kid's Gallery` : 'Product Not Found' };
 }
 
-export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = await getProductBySlug(params.slug);
+const VISUAL_FALLBACKS = ['🧱', '🧸', '🏎️', '🎨', '🧩', '🚂', '🥁'];
+
+export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();
   }
 
-  // Consistent visual fallbacks based on ID string characters
   const charCode = product.id.charCodeAt(product.id.length - 1) || 0;
-  const VISUAL_FALLBACKS = ['🧱', '🧸', '🏎️', '🎨', '🧩', '🚂', '🥁'];
   const mainEmoji = VISUAL_FALLBACKS[charCode % VISUAL_FALLBACKS.length];
   const sideEmojis = [VISUAL_FALLBACKS[(charCode+1)%7], VISUAL_FALLBACKS[(charCode+2)%7], VISUAL_FALLBACKS[(charCode+3)%7]];
+
+  const hasImages = product.images && product.images.length > 0;
+  const mainImage = hasImages ? product.images![0] : null;
+  const galleryImages = hasImages ? product.images!.slice(0, 4) : [];
 
   return (
     <main className="pt-12 md:pt-24 pb-20 px-6 md:px-12 max-w-[1440px] mx-auto space-y-24">
@@ -27,21 +34,38 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         {/* Left Column: Gallery */}
         <div className="space-y-6">
           <div className="aspect-square bg-surface-container-low rounded-2xl overflow-hidden shadow-sm relative group flex items-center justify-center border border-outline-variant/10">
-            {/* Visual placeholder instead of image */}
-            <div className="w-full h-full bg-surface-container-high flex flex-col items-center justify-center group-hover:scale-105 transition-transform duration-700 ease-out">
-              <span className="text-[15rem] drop-shadow-xl">{mainEmoji}</span>
-            </div>
+            {mainImage ? (
+              <img
+                src={mainImage.url}
+                alt={mainImage.altText || product.name}
+                className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
+              />
+            ) : (
+              <div className="w-full h-full bg-surface-container-high flex flex-col items-center justify-center group-hover:scale-105 transition-transform duration-700 ease-out">
+                <span className="text-[15rem] drop-shadow-xl">{mainEmoji}</span>
+              </div>
+            )}
           </div>
           
           <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
-            <div className="w-24 h-24 flex-shrink-0 bg-surface-container-highest rounded-xl border-4 border-primary overflow-hidden cursor-pointer transition-transform hover:scale-105 shadow-sm flex items-center justify-center text-4xl">
-              {mainEmoji}
-            </div>
-            {sideEmojis.map((emoji, i) => (
-              <div key={i} className="w-24 h-24 flex-shrink-0 bg-surface-container-highest rounded-xl border-2 border-transparent overflow-hidden cursor-pointer transition-transform hover:scale-105 shadow-sm flex items-center justify-center text-4xl">
-                {emoji}
-              </div>
-            ))}
+            {hasImages ? (
+              galleryImages.map((img, i) => (
+                <div key={img.id} className={`w-24 h-24 flex-shrink-0 bg-surface-container-highest rounded-xl overflow-hidden cursor-pointer transition-transform hover:scale-105 shadow-sm ${i === 0 ? 'border-4 border-primary' : 'border-2 border-transparent'}`}>
+                  <img src={img.url} alt={img.altText || `${product.name} view ${i + 1}`} className="w-full h-full object-contain" />
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="w-24 h-24 flex-shrink-0 bg-surface-container-highest rounded-xl border-4 border-primary overflow-hidden cursor-pointer transition-transform hover:scale-105 shadow-sm flex items-center justify-center text-4xl">
+                  {mainEmoji}
+                </div>
+                {sideEmojis.map((emoji, i) => (
+                  <div key={i} className="w-24 h-24 flex-shrink-0 bg-surface-container-highest rounded-xl border-2 border-transparent overflow-hidden cursor-pointer transition-transform hover:scale-105 shadow-sm flex items-center justify-center text-4xl">
+                    {emoji}
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
 
@@ -75,20 +99,13 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
             )}
           </div>
 
-          <div className="pt-8 flex flex-col sm:flex-row gap-4">
-            <button className="flex-1 bg-gradient-to-r from-primary to-on-primary-container text-white py-4 md:py-5 rounded-full text-lg md:text-xl font-black shadow-[0px_16px_32px_rgba(174,47,52,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
-              Add to Cart
-              <span className="material-symbols-outlined text-[24px]">shopping_bag</span>
-            </button>
-            <button className="w-full sm:w-16 h-[60px] sm:h-auto rounded-full bg-surface-container-high flex items-center justify-center hover:bg-primary-container transition-colors group border border-outline-variant/20 shadow-sm">
-              <span className="material-symbols-outlined text-on-surface group-hover:text-primary transition-colors text-[24px]">favorite</span>
-            </button>
-          </div>
+          {/* Interactive Actions (client component) */}
+          <ProductDetailActions product={product} />
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-sm font-medium text-secondary pt-6 border-t border-outline-variant/20">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-green-600 text-[20px]">local_shipping</span>
-              Free Shipping over ₹500
+              Free Shipping over ₹499
             </div>
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-green-600 text-[20px]">verified</span>
@@ -112,7 +129,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         </section>
       )}
 
-      {/* Related Treasures Section - Quick Mock */}
+      {/* Related Treasures Section */}
       <section className="space-y-10 border-t border-outline-variant/20 pt-16">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>

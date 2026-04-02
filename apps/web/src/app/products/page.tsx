@@ -7,9 +7,10 @@ export const metadata = { title: 'Toys | Kid\'s Gallery' };
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const categorySlug = typeof searchParams.category === 'string' ? searchParams.category : undefined;
+  const resolvedParams = await searchParams;
+  const categorySlug = typeof resolvedParams.category === 'string' ? resolvedParams.category : undefined;
   const products = await getProducts(categorySlug);
 
   return (

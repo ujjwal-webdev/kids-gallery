@@ -11,6 +11,7 @@ import { bannerRoutes } from './banner.routes';
 import { paymentRoutes } from './payment.routes';
 import { deliveryRoutes } from './delivery.routes';
 import { adminRouter } from './admin';
+import { guestOrderRoutes } from './guest-order.routes';
 
 export const router = Router();
 
@@ -26,4 +27,5 @@ router.use('/banners', bannerRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/delivery', deliveryRoutes);
 router.use('/admin', adminRouter);
+router.use('/guest-orders', guestOrderRoutes);
 

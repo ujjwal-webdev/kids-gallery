@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/lib/services';
+import { useCartStore } from '@/store/cartStore';
 
 interface FeaturedProductsProps {
   products: Product[];
@@ -10,14 +12,35 @@ interface FeaturedProductsProps {
 const VISUAL_FALLBACKS = ['🚢', '🧱', '🦒', '🍳', '🎨', '🧸', '🏎️'];
 
 export function FeaturedProducts({ products }: FeaturedProductsProps) {
-  // If no products available, don't break the layout
+  const addItem = useCartStore((s) => s.addItem);
+  const [addedSlots, setAddedSlots] = useState<Record<string, boolean>>({});
+
   if (!products || products.length === 0) return null;
 
-  // Map the first 4 featured products to the 4 distinct layout slots
   const p1 = products[0];
   const p2 = products[1] || products[0];
   const p3 = products[2] || products[0];
   const p4 = products[3] || products[0];
+
+  const handleAdd = (product: Product, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: Number(product.sellingPrice),
+      mrp: Number(product.mrp),
+      image: product.images?.[0]?.url,
+      quantity: 1,
+    });
+    setAddedSlots((prev) => ({ ...prev, [product.id]: true }));
+    setTimeout(() => setAddedSlots((prev) => ({ ...prev, [product.id]: false })), 1200);
+  };
+
+  const addBtnClass = (id: string, base: string) =>
+    addedSlots[id]
+      ? `${base} !bg-green-500 !text-white scale-110`
+      : base;
 
   return (
     <section className="py-16 bg-surface-container-low">
@@ -53,10 +76,10 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
             <div className="mt-auto flex justify-between items-center">
               <span className="font-bold text-2xl text-primary">₹{p2.sellingPrice}</span>
               <button 
-                className="bg-primary text-on-primary w-10 h-10 rounded-full flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform"
-                onClick={(e) => { e.preventDefault(); console.log('Added to cart:', p2.name); }}
+                className={addBtnClass(p2.id, "bg-primary text-on-primary w-10 h-10 rounded-full flex items-center justify-center shadow-md transform group-hover:scale-110 transition-all")}
+                onClick={(e) => handleAdd(p2, e)}
               >
-                <span className="material-symbols-outlined text-sm font-bold">add</span>
+                <span className="material-symbols-outlined text-sm font-bold">{addedSlots[p2.id] ? 'check' : 'add'}</span>
               </button>
             </div>
           </Link>
@@ -71,10 +94,10 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
             <div className="mt-auto flex justify-between items-center">
               <span className="font-bold text-2xl text-tertiary">₹{p3.sellingPrice}</span>
               <button 
-                className="bg-tertiary text-on-tertiary w-10 h-10 rounded-full flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform"
-                onClick={(e) => { e.preventDefault(); console.log('Added to cart:', p3.name); }}
+                className={addBtnClass(p3.id, "bg-tertiary text-on-tertiary w-10 h-10 rounded-full flex items-center justify-center shadow-md transform group-hover:scale-110 transition-all")}
+                onClick={(e) => handleAdd(p3, e)}
               >
-                <span className="material-symbols-outlined text-sm font-bold">add</span>
+                <span className="material-symbols-outlined text-sm font-bold">{addedSlots[p3.id] ? 'check' : 'add'}</span>
               </button>
             </div>
           </Link>
@@ -97,3 +120,4 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
     </section>
   );
 }
+
