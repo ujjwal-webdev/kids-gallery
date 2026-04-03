@@ -9,3 +9,11 @@ export const addToCartSchema = z.object({
 export const updateCartItemSchema = z.object({
   quantity: z.number().int().min(0, 'Quantity must be 0 or greater'),
 });
+
+export const syncCartSchema = z.object({
+  items: z.array(z.object({
+    productId: z.string(), // Allowing general string here if cuid check is too strict for some mock data
+    variantId: z.string().optional(),
+    quantity: z.number().int().min(1)
+  }))
+});

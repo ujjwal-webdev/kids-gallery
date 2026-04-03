@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/cartStore';
+import { useAuthStore } from '@/store/authStore';
+import apiClient from '@/lib/api';
 import { OrderSuccess } from './OrderSuccess';
 
 const FREE_DELIVERY_THRESHOLD = 499;
@@ -33,6 +35,7 @@ const INITIAL_FORM: FormData = {
 
 export function CheckoutPageContent() {
   const router = useRouter();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const items = useCartStore((s) => s.items);
   const totalPrice = useCartStore((s) => s.totalPrice());
   const totalItems = useCartStore((s) => s.totalItems());
@@ -45,8 +48,17 @@ export function CheckoutPageContent() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
 
+  // Route Guard
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/auth/login?redirect=/checkout');
+    }
+  }, [isAuthenticated, router]);
+
   const deliveryCharge = totalPrice >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
   const total = totalPrice + deliveryCharge;
+
+  if (!isAuthenticated) return <div className="min-h-screen bg-gray-50" />;
 
   // Redirect if cart is empty and order not placed
   if (items.length === 0 && !orderPlaced) {
@@ -94,43 +106,32 @@ export function CheckoutPageContent() {
     setApiError('');
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-      const res = await fetch(`${API_URL}/guest-orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name,
-          phone: form.phone,
-          email: form.email,
-          address: {
-            line1: form.addressLine1,
-            line2: form.addressLine2 || undefined,
-            city: form.city,
-            state: form.state,
-            pincode: form.pincode,
-          },
-          items: items.map((i) => ({
-            productId: i.productId,
-            variantId: i.variantId || undefined,
-            quantity: i.quantity,
-          })),
-          paymentMethod: 'COD',
-        }),
+      // 1. Create or save address
+      const addressRes = await apiClient.post('/users/addresses', {
+        name: form.name,
+        phone: form.phone,
+        addressLine1: form.addressLine1,
+        addressLine2: form.addressLine2 || undefined,
+        city: form.city,
+        state: form.state,
+        pinCode: form.pincode,
+        type: 'HOME',
+        isDefault: true,
       });
 
-      const data = await res.json();
+      const addressId = addressRes.data.data.id;
 
-      if (!res.ok) {
-        setApiError(data.error || 'Something went wrong. Please try again.');
-        setIsPlacing(false);
-        return;
-      }
+      // 2. Create the Order
+      const orderRes = await apiClient.post('/orders', {
+        addressId,
+        paymentMethod: 'COD',
+      });
 
-      setOrderId(data.data.orderNumber);
+      setOrderId(orderRes.data.data.orderNumber);
       clearCart();
       setOrderPlaced(true);
-    } catch {
-      setApiError('Network error. Please check your connection and try again.');
+    } catch (err: any) {
+      setApiError(err.response?.data?.message || err.message || 'Network error. Please try again.');
     } finally {
       setIsPlacing(false);
     }

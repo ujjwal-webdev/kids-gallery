@@ -55,4 +55,15 @@ export const cartController = {
       next(error);
     }
   },
+
+  async syncCart(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as AuthRequest).user!.id;
+      const { items } = req.body;
+      const result = await cartService.syncCart(userId, items);
+      sendSuccess(res, result, 'Cart synchronized');
+    } catch (error) {
+      next(error);
+    }
+  },
 };

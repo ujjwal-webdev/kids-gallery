@@ -107,4 +107,42 @@ export const cartService = {
     if (!cart) return;
     await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
   },
+
+  async syncCart(userId: string, items: Array<{ productId: string; variantId?: string; quantity: number }>) {
+    let cart = await prisma.cart.findUnique({ where: { userId } });
+    if (!cart) {
+      cart = await prisma.cart.create({ data: { userId } });
+    }
+
+    for (const item of items) {
+      const product = await prisma.product.findUnique({ where: { id: item.productId } });
+      if (!product || !product.isActive) continue;
+
+      const existing = await prisma.cartItem.findFirst({
+        where: {
+          cartId: cart.id,
+          productId: item.productId,
+          variantId: item.variantId ?? null,
+        },
+      });
+
+      if (existing) {
+        const newQty = existing.quantity + item.quantity;
+        // if product tracks inventory, we could cap newQty to stock
+        const finalQty = (product.trackInventory && product.stock < newQty) ? product.stock : newQty;
+        if (finalQty > 0) {
+          await prisma.cartItem.update({ where: { id: existing.id }, data: { quantity: finalQty } });
+        }
+      } else {
+        const finalQty = (product.trackInventory && product.stock < item.quantity) ? product.stock : item.quantity;
+        if (finalQty > 0) {
+          await prisma.cartItem.create({
+            data: { cartId: cart.id, productId: item.productId, quantity: finalQty, variantId: item.variantId ?? null },
+          });
+        }
+      }
+    }
+
+    return this.getCart(userId);
+  },
 };

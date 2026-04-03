@@ -20,6 +20,7 @@ interface CartState {
   clearCart: () => void;
   totalItems: () => number;
   totalPrice: () => number;
+  fetchCart: () => Promise<void>;
 }
 
 export const useCartStore = create<CartState>()(
@@ -59,6 +60,29 @@ export const useCartStore = create<CartState>()(
       clearCart: () => set({ items: [] }),
       totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
       totalPrice: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      fetchCart: async () => {
+        try {
+          // Dynamic import of apiClient to avoid circular dependencies if any,
+          // but we can just use window fetch or import apiClient
+          const { default: apiClient } = await import('@/lib/api');
+          const res = await apiClient.get('/cart');
+          if (res.data?.data?.items) {
+            const remoteItems = res.data.data.items.map((item: any) => ({
+              productId: item.productId,
+              name: item.product.name,
+              price: item.product.price,
+              mrp: item.product.mrp,
+              image: item.product.images?.[0],
+              quantity: item.quantity,
+              variantId: item.variantId,
+              variantName: item.variant?.name,
+            }));
+            set({ items: remoteItems });
+          }
+        } catch (err) {
+          console.error('Failed to fetch remote cart:', err);
+        }
+      },
     }),
     { name: 'cart-store' },
   ),
