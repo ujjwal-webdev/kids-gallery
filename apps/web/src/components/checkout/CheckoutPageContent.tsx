@@ -36,6 +36,7 @@ const INITIAL_FORM: FormData = {
 export function CheckoutPageContent() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
   const items = useCartStore((s) => s.items);
   const totalPrice = useCartStore((s) => s.totalPrice());
   const totalItems = useCartStore((s) => s.totalItems());
@@ -50,15 +51,15 @@ export function CheckoutPageContent() {
 
   // Route Guard
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (hasHydrated && !isAuthenticated) {
       router.replace('/auth/login?redirect=/checkout');
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, router]);
 
   const deliveryCharge = totalPrice >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
   const total = totalPrice + deliveryCharge;
 
-  if (!isAuthenticated) return <div className="min-h-screen bg-gray-50" />;
+  if (!hasHydrated || !isAuthenticated) return <div className="min-h-screen bg-gray-50" />;
 
   // Redirect if cart is empty and order not placed
   if (items.length === 0 && !orderPlaced) {

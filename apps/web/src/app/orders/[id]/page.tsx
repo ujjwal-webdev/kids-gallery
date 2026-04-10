@@ -1,12 +1,15 @@
+import { Suspense } from 'react';
+import { OrderDetailContent } from '@/components/orders/OrderDetailContent';
+
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function OrderDetailPage({ params }: Props) {
+export default async function OrderDetailPage({ params }: Props) {
+  const { id } = await params;
   return (
-    <div className="container-page py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Order #{params.id}</h1>
-      {/* TODO: Order detail */}
-    </div>
+    <Suspense fallback={<div className="min-h-screen bg-[#fff9eb]" />}>
+      <OrderDetailContent orderId={id} />
+    </Suspense>
   );
 }

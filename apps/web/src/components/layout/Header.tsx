@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { Category } from '@/lib/services';
 import { useCartStore } from '@/store/cartStore';
+import { useAuthStore } from '@/store/authStore';
 
 interface HeaderProps {
   categories: Category[];
@@ -12,7 +14,31 @@ interface HeaderProps {
 export function Header({ categories }: HeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const cartItemCount = useCartStore((s) => s.totalItems());
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+
+  const [profileOpen, setProfileOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setProfileOpen(false);
+    router.push('/');
+  };
 
   const navCategories = categories.slice(0, 5);
 
@@ -75,9 +101,67 @@ export function Header({ categories }: HeaderProps) {
           <Link href="/wishlist" className="scale-105 active:scale-95 transition-transform text-[#ae2f34]">
             <span className="material-symbols-outlined">favorite</span>
           </Link>
-          <Link href="/auth/login" className="scale-105 active:scale-95 transition-transform text-[#ae2f34]">
-            <span className="material-symbols-outlined">person</span>
-          </Link>
+
+          {/* Profile / Auth */}
+          {isAuthenticated ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="scale-105 active:scale-95 transition-transform text-[#ae2f34] flex items-center gap-1"
+              >
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+              </button>
+
+              {profileOpen && (
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-scale-in origin-top-right">
+                  {/* User greeting */}
+                  <div className="px-4 py-2 border-b border-gray-100 mb-1">
+                    <p className="text-sm font-bold text-on-surface truncate">{user?.name || 'Hey there!'}</p>
+                    <p className="text-xs text-secondary truncate">{user?.phone}</p>
+                  </div>
+
+                  <Link
+                    href="/profile"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-on-surface hover:bg-surface-container transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-primary">person</span>
+                    My Profile
+                  </Link>
+                  <Link
+                    href="/orders"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-on-surface hover:bg-surface-container transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-primary">shopping_bag</span>
+                    My Orders
+                  </Link>
+                  <Link
+                    href="/wishlist"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-on-surface hover:bg-surface-container transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-primary">favorite</span>
+                    Wishlist
+                  </Link>
+
+                  <div className="border-t border-gray-100 mt-1 pt-1">
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors w-full"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">logout</span>
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link href="/auth/login" className="scale-105 active:scale-95 transition-transform text-[#ae2f34]">
+              <span className="material-symbols-outlined">person</span>
+            </Link>
+          )}
         </div>
       </nav>
     </header>

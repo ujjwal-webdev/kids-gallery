@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import apiClient from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -11,6 +11,16 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const redirectParams = searchParams?.get('redirect');
   const redirectUrl = redirectParams ? decodeURIComponent(redirectParams) : '/';
+
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (hasHydrated && isAuthenticated) {
+      router.replace(redirectUrl);
+    }
+  }, [hasHydrated, isAuthenticated, router, redirectUrl]);
 
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');

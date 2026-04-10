@@ -1,11 +1,12 @@
-export const metadata = { title: 'My Profile' };
+import { Suspense } from 'react';
+import { ProfilePageContent } from '@/components/profile/ProfilePageContent';
+
+export const metadata = { title: "My Profile | Kid's Gallery" };
 
 export default function ProfilePage() {
   return (
-    <div className="container-page py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h1>
-      {/* TODO: Profile form */}
-      <p className="text-gray-500">Profile management coming soon.</p>
-    </div>
+    <Suspense fallback={<div className="min-h-screen bg-[#fff9eb]" />}>
+      <ProfilePageContent />
+    </Suspense>
   );
 }
