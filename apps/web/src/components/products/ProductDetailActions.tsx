@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Product } from '@/lib/services';
 import { useCartStore } from '@/store/cartStore';
+import { WishlistButton } from '@/components/wishlist/WishlistButton';
 
 interface ProductDetailActionsProps {
   product: Product;
@@ -79,9 +80,7 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
             </>
           )}
         </button>
-        <button className="w-full sm:w-16 h-[60px] sm:h-auto rounded-full bg-surface-container-high flex items-center justify-center hover:bg-primary-container transition-colors group border border-outline-variant/20 shadow-sm">
-          <span className="material-symbols-outlined text-on-surface group-hover:text-primary transition-colors text-[24px]">favorite</span>
-        </button>
+        <WishlistButton productId={product.id} size="md" className="w-full sm:w-16 h-[60px] sm:h-auto !rounded-full bg-surface-container-high border border-outline-variant/20 shadow-sm" />
       </div>
     </div>
   );

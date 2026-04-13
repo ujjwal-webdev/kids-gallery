@@ -1,6 +1,6 @@
 'use client';
 
-export function ProductFilters() {
+export function ProductFilters({ totalProducts }: { totalProducts: number }) {
   return (
     <section className="flex flex-wrap items-center gap-4 mb-12">
       <div className="flex items-center gap-2 bg-surface-container-low px-4 py-3 rounded-full text-secondary font-bold">
@@ -24,7 +24,7 @@ export function ProductFilters() {
       </button>
       
       <div className="ml-auto flex items-center gap-4 w-full md:w-auto justify-between md:justify-end mt-4 md:mt-0">
-        <span className="text-sm font-bold text-on-surface-variant">Showing 4 products</span>
+        <span className="text-sm font-bold text-on-surface-variant">Showing {totalProducts} products</span>
         <div className="flex gap-2">
           <button className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center shadow-sm">
             <span className="material-symbols-outlined text-[20px]">grid_view</span>

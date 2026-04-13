@@ -12,6 +12,7 @@ import { paymentRoutes } from './payment.routes';
 import { deliveryRoutes } from './delivery.routes';
 import { adminRouter } from './admin';
 import { guestOrderRoutes } from './guest-order.routes';
+import { wishlistRoutes } from './wishlist.routes';
 
 export const router = Router();
 
@@ -28,4 +29,5 @@ router.use('/payments', paymentRoutes);
 router.use('/delivery', deliveryRoutes);
 router.use('/admin', adminRouter);
 router.use('/guest-orders', guestOrderRoutes);
+router.use('/wishlist', wishlistRoutes);
 

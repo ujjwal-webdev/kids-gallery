@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getProductBySlug } from '@/lib/services';
 import { ProductDetailActions } from '@/components/products/ProductDetailActions';
+import { ReviewSection } from '@/components/reviews/ReviewSection';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -26,6 +28,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const hasImages = product.images && product.images.length > 0;
   const mainImage = hasImages ? product.images![0] : null;
   const galleryImages = hasImages ? product.images!.slice(0, 4) : [];
+
+  // Review data from API
+  const avgRating = (product as any).avgRating || 0;
+  const reviewCount = (product as any).reviews?.length || 0;
 
   return (
     <main className="pt-12 md:pt-24 pb-20 px-6 md:px-12 max-w-[1440px] mx-auto space-y-24">
@@ -81,12 +87,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               {product.name}
             </h1>
             <div className="flex items-center gap-2 mb-6">
-              <div className="flex text-secondary">
+              <div className="flex">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <span key={i} className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span key={i} className={`material-symbols-outlined text-[20px] ${i <= Math.round(avgRating) ? 'text-amber-400' : 'text-gray-200'}`} style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                 ))}
               </div>
-              <span className="text-secondary font-semibold text-sm">(12 reviews)</span>
+              <span className="text-secondary font-semibold text-sm">({reviewCount} review{reviewCount !== 1 ? 's' : ''})</span>
             </div>
             <div className="flex items-end gap-4">
               <p className="text-4xl font-black text-primary">₹{product.sellingPrice}</p>
@@ -128,6 +134,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </section>
       )}
+
+      {/* Customer Reviews */}
+      <ReviewSection productId={product.id} initialAvgRating={avgRating} initialReviewCount={reviewCount} />
+
+      {/* Write a Review */}
+      <ReviewForm productId={product.id} />
 
       {/* Related Treasures Section */}
       <section className="space-y-10 border-t border-outline-variant/20 pt-16">

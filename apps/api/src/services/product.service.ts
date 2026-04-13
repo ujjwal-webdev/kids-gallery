@@ -25,6 +25,7 @@ export const productService = {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
+        { brand: { contains: search, mode: 'insensitive' } },
         { tags: { has: search } },
       ];
     }

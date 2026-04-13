@@ -1,11 +1,21 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { Category } from '@/lib/services';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
+import { useWishlistStore } from '@/store/wishlistStore';
+import apiClient from '@/lib/api';
+
+interface SearchResult {
+  id: string;
+  name: string;
+  slug: string;
+  sellingPrice: string;
+  images?: Array<{ url: string; altText?: string }>;
+}
 
 interface HeaderProps {
   categories: Category[];
@@ -19,9 +29,18 @@ export function Header({ categories }: HeaderProps) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const wishlistItemCount = useWishlistStore((s) => s.items.size);
 
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -29,10 +48,46 @@ export function Header({ categories }: HeaderProps) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const fetchSuggestions = useCallback(async (q: string) => {
+    if (q.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    setSearchLoading(true);
+    try {
+      const res = await apiClient.get(`/products/search`, { params: { q, limit: 5 } });
+      const data = res.data?.data || [];
+      setSuggestions(data);
+      setShowSuggestions(data.length > 0);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, []);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchSuggestions(value), 300);
+  };
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (searchQuery.trim()) {
+      setShowSuggestions(false);
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -82,14 +137,72 @@ export function Header({ categories }: HeaderProps) {
           })}
         </div>
         <div className="flex items-center gap-6">
-          <div className="hidden lg:flex items-center bg-surface-container-lowest rounded-full px-4 py-2 shadow-sm">
-            <span className="material-symbols-outlined text-secondary mr-2">search</span>
-            <input 
-              className="bg-transparent border-none focus:ring-0 text-sm w-48 font-medium outline-none" 
-              placeholder="Search treasures..." 
-              type="text"
-            />
+          {/* Search Bar */}
+          <div className="hidden lg:block relative" ref={searchRef}>
+            <form onSubmit={handleSearchSubmit} className="flex items-center bg-surface-container-lowest rounded-full px-4 py-2 shadow-sm w-[260px]">
+              <button type="submit" className="mr-2 text-secondary hover:text-primary transition-colors flex-shrink-0">
+                <span className="material-symbols-outlined">search</span>
+              </button>
+              <div className="relative flex-1">
+                <input 
+                  className="bg-transparent border-none focus:ring-0 text-sm w-full font-medium outline-none pr-6" 
+                  placeholder="Search treasures..." 
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearchQuery(''); setSuggestions([]); setShowSuggestions(false); }}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+                )}
+              </div>
+            </form>
+
+            {/* Suggestions Dropdown */}
+            {showSuggestions && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50 animate-scale-in origin-top min-w-[320px]">
+                {searchLoading ? (
+                  <div className="px-4 py-3 text-sm text-secondary text-center">Searching...</div>
+                ) : (
+                  <>
+                    {suggestions.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={`/products/${item.slug}`}
+                        onClick={() => { setShowSuggestions(false); setSearchQuery(''); }}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-surface-container transition-colors"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-surface-container-high flex-shrink-0 overflow-hidden flex items-center justify-center">
+                          {item.images?.[0]?.url ? (
+                            <img src={item.images[0].url} alt={item.name} className="w-full h-full object-contain" />
+                          ) : (
+                            <span className="text-lg">🎁</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-on-surface truncate">{item.name}</p>
+                          <p className="text-xs font-bold text-primary">₹{item.sellingPrice}</p>
+                        </div>
+                      </Link>
+                    ))}
+                    <button
+                      onClick={handleSearchSubmit}
+                      className="w-full px-4 py-2.5 text-sm font-bold text-primary hover:bg-primary/5 transition-colors text-center border-t border-gray-100"
+                    >
+                      View all results for "{searchQuery}"
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
+
           <Link href="/cart" className="relative scale-105 active:scale-95 transition-transform text-[#ae2f34]">
             <span className="material-symbols-outlined">shopping_cart</span>
             {cartItemCount > 0 && (
@@ -98,8 +211,13 @@ export function Header({ categories }: HeaderProps) {
               </span>
             )}
           </Link>
-          <Link href="/wishlist" className="scale-105 active:scale-95 transition-transform text-[#ae2f34]">
+          <Link href="/wishlist" className="relative scale-105 active:scale-95 transition-transform text-[#ae2f34]">
             <span className="material-symbols-outlined">favorite</span>
+            {wishlistItemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#ae2f34] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-bounce-once">
+                {wishlistItemCount > 9 ? '9+' : wishlistItemCount}
+              </span>
+            )}
           </Link>
 
           {/* Profile / Auth */}
@@ -167,4 +285,3 @@ export function Header({ categories }: HeaderProps) {
     </header>
   );
 }
-

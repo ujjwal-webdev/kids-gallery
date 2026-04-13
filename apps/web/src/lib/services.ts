@@ -71,15 +71,20 @@ export async function getCategories(asTree = false): Promise<Category[]> {
 /**
  * Fetch all products, optionally filtered by category slug.
  */
-export async function getProducts(categorySlug?: string): Promise<Product[]> {
+export async function getProducts(categorySlug?: string, search?: string): Promise<Product[]> {
   const url = new URL(`${API_URL}/products`);
   if (categorySlug) {
     url.searchParams.append('category', categorySlug);
   }
+  if (search) {
+    url.searchParams.append('search', search);
+  }
 
-  const res = await fetch(url.toString(), {
-    next: { revalidate: 60 * 5 },
-  });
+  const fetchOptions: RequestInit = search 
+    ? { cache: 'no-store' } 
+    : { next: { revalidate: 60 * 5 } };
+
+  const res = await fetch(url.toString(), fetchOptions);
 
   if (!res.ok) {
     console.error('Failed to fetch products:', await res.text());
